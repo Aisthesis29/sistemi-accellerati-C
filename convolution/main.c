@@ -83,12 +83,12 @@ void bilateral_u8_gray(uint8_t *h_input, uint8_t *in, uint8_t *out, int width, i
   }
 }
 
-main(int argc, char **argv) {
+int main(int argc, char **argv) {
         
     const char* inputFile = argv[1];
     int radius = atoi(argv[2]);
-    int sigma_s = argv[3];
-    int  sigma_r = argv[4];
+    int sigma_s = (int)argv[3];
+    int  sigma_r = (int)argv[4];
     // ========== Caricamento immagine ==========
     int width, height, channels;
     unsigned char* h_input = stbi_load(inputFile, &width, &height, &channels, 0);
@@ -114,4 +114,5 @@ main(int argc, char **argv) {
     stbi_write_png("risultato.png", width, height, channels, h_output, width * channels);
 
     printf("\n\n");
+    return 0;
 }
