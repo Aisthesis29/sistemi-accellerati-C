@@ -74,11 +74,11 @@ void bilateral_u8_gray(uint8_t *h_input, uint8_t *in, uint8_t *out, int width, i
       float res = (wsum > 0.0f) ? (sum / wsum) : center;
       int ir = (int)lroundf(res);
       out[idx0] = (uint8_t)clampi(ir, 0, 255);
-      
+      /*
       float peso = (sum/wsum)/center;
       out[idx0*3] = h_input[idx0*3]*peso;
         out[idx0*3+1] = h_input[idx0*3+1]*peso;
-        out[idx0*3+2] = h_input[idx0*3+2]*peso;
+        out[idx0*3+2] = h_input[idx0*3+2]*peso;*/
     }
   }
 }
@@ -101,18 +101,21 @@ int main(int argc, char **argv) {
     //OPERAZIONI BELLE
     // ========== Allocazione memoria ==========
     int imageSize = width * height * channels;
-    unsigned char* h_output = (unsigned char*)malloc(imageSize);
+    unsigned char* h_output = (unsigned char*)malloc(imageSize/channels);
 
-    uint8_t *in = (unsigned char*)malloc(imageSize/3);
+    int grayscale = imageSize/channels;
+    uint8_t *in = (unsigned char*)malloc(grayscale);
     grayscale_cpu(h_input, in, width, height);
     printf("Finito greyscale\n");
-    int ch = 1;
-    stbi_write_png("grayscale.png", width, height, ch, in, width * ch);
+    stbi_write_png("grayscale.png", width, height, 1, in, width);
     bilateral_u8_gray(h_input, in, h_output, width, height, radius, sigma_s, sigma_r);
 
     // ========== Salvataggio immagini ==========
-    stbi_write_png("risultato.png", width, height, channels, h_output, width * channels);
+    stbi_write_png("risultato.png", width, height, 1, h_output, width);
 
+    //free(h_input);
+    free(h_output);
+    free(in);
     printf("\n\n");
     return 0;
 }
