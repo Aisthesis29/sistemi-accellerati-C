@@ -41,6 +41,8 @@ void bilateral_u8_gray(unsigned char *h_input, unsigned char *in, unsigned char 
     printf("out=[%d]\t", out);
     printf("h_input=[%d]", h_input);
   }
+  printf("width=%d, height=%d, radius=%d\n", width, height, radius);
+  printf("sigma_s=%d, sigma_r=%d\n", sigma_s, sigma_r);
   if (!in || !out || width <= 0 || height <= 0 || radius < 0) return;
   if (sigma_s <= 0 || sigma_r <= 0) return;
 
@@ -93,8 +95,8 @@ int main(int argc, char **argv) {
         
   const char* inputFile = argv[1];
   int radius = atoi(argv[2]);
-  int sigma_s = (int)argv[3];
-  int  sigma_r = (int)argv[4];
+  int sigma_s = atoi(argv[3]);
+  int  sigma_r = atoi(argv[4]);
   // ========== Caricamento immagine ==========
   int width, height, channels;
   unsigned char* h_input = stbi_load(inputFile, &width, &height, &channels, 0);
