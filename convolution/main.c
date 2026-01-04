@@ -34,7 +34,13 @@ void grayscale_cpu(unsigned char* input, unsigned char* output, int width, int h
         }
 }
 
-void bilateral_u8_gray(uint8_t *h_input, uint8_t *in, uint8_t *out, int width, int height, int radius, int sigma_s, int sigma_r) {
+void bilateral_u8_gray(unsigned char *h_input, unsigned char *in, unsigned char *out, int width, int height, int radius, int sigma_s, int sigma_r) {
+  if(!in || !out || ! h_input) {
+    printf("errore nel caricamento di una matrice\n");
+    printf("in=[%d]\t", in);
+    printf("out=[%d]\t", out);
+    printf("h_input=[%d]", h_input);
+  }
   if (!in || !out || width <= 0 || height <= 0 || radius < 0) return;
   if (sigma_s <= 0 || sigma_r <= 0) return;
 
@@ -73,7 +79,7 @@ void bilateral_u8_gray(uint8_t *h_input, uint8_t *in, uint8_t *out, int width, i
 
       float res = (wsum > 0.0f) ? (sum / wsum) : center;
       int ir = (int)lroundf(res);
-      out[idx0] = (uint8_t)clampi(ir, 0, 255);
+      out[idx0] = (unsigned char)clampi(ir, 0, 255);
       /*
       float peso = (sum/wsum)/center;
       out[idx0*3] = h_input[idx0*3]*peso;
@@ -85,37 +91,37 @@ void bilateral_u8_gray(uint8_t *h_input, uint8_t *in, uint8_t *out, int width, i
 
 int main(int argc, char **argv) {
         
-    const char* inputFile = argv[1];
-    int radius = atoi(argv[2]);
-    int sigma_s = (int)argv[3];
-    int  sigma_r = (int)argv[4];
-    // ========== Caricamento immagine ==========
-    int width, height, channels;
-    unsigned char* h_input = stbi_load(inputFile, &width, &height, &channels, 0);
-    if (!h_input) {
-        printf("Error loading image %s\n", inputFile);
-        return 1;
-    }
-    printf("Image loaded: %dx%d with %d channels\n", width, height, channels);
+  const char* inputFile = argv[1];
+  int radius = atoi(argv[2]);
+  int sigma_s = (int)argv[3];
+  int  sigma_r = (int)argv[4];
+  // ========== Caricamento immagine ==========
+  int width, height, channels;
+  unsigned char* h_input = stbi_load(inputFile, &width, &height, &channels, 0);
+  if (!h_input) {
+      printf("Error loading image %s\n", inputFile);
+      return 1;
+  }
+  printf("Image loaded: %dx%d with %d channels\n", width, height, channels);
 
-    //OPERAZIONI BELLE
-    // ========== Allocazione memoria ==========
-    int imageSize = width * height * channels;
-    unsigned char* h_output = (unsigned char*)malloc(imageSize/channels);
+  //OPERAZIONI BELLE
+  // ========== Allocazione memoria ==========
+  int imageSize = width * height * channels;
+  int grayscale = imageSize/channels;
+  unsigned char* h_output = (unsigned char*)malloc(grayscale);
 
-    int grayscale = imageSize/channels;
-    uint8_t *in = (unsigned char*)malloc(grayscale);
-    grayscale_cpu(h_input, in, width, height);
-    printf("Finito greyscale\n");
-    stbi_write_png("grayscale.png", width, height, 1, in, width);
-    bilateral_u8_gray(h_input, in, h_output, width, height, radius, sigma_s, sigma_r);
+  unsigned char *in = (unsigned char*)malloc(grayscale);
+  grayscale_cpu(h_input, in, width, height);
+  printf("Finito greyscale\n");
+  stbi_write_png("grayscale.png", width, height, 1, in, width);
+  bilateral_u8_gray(h_input, in, h_output, width, height, radius, sigma_s, sigma_r);
 
-    // ========== Salvataggio immagini ==========
-    stbi_write_png("risultato.png", width, height, 1, h_output, width);
+  // ========== Salvataggio immagini ==========
+  stbi_write_png("risultato.png", width, height, 1, h_output, width);
 
-    //free(h_input);
-    free(h_output);
-    free(in);
-    printf("\n\n");
-    return 0;
+  free(h_input);
+  free(h_output);
+  free(in);
+  printf("\n\n");
+  return 0;
 }
