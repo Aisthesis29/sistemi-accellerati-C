@@ -84,9 +84,12 @@ void bilateral_u8_gray(unsigned char *h_input, unsigned char *in, unsigned char 
       out[idx0] = (unsigned char)clampi(ir, 0, 255);
       */
       float peso = (sum/wsum)/center;
-      out[idx0*3] = h_input[idx0*3]*peso;
-        out[idx0*3+1] = h_input[idx0*3+1]*peso;
-        out[idx0*3+2] = h_input[idx0*3+2]*peso;
+      int tmp = (int)lroundf(h_input[idx0*3]*peso);
+      out[idx0*3] = (unsigned char)clampi(tmp, 0, 255);
+      tmp = (int)lroundf(h_input[idx0*3+1]*peso);
+        out[idx0*3+1] = (unsigned char)clampi(tmp, 0, 255);
+        tmp = (int)lroundf(h_input[idx0*3+2]*peso);
+        out[idx0*3+2] = (unsigned char)clampi(tmp, 0, 255);
     }
   }
 }
