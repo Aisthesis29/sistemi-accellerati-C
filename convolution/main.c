@@ -48,7 +48,7 @@ void bilateral_u8_gray(unsigned char *h_input, unsigned char *in, unsigned char 
 
   const float inv_2_sigma_s2 = 1.0f / (2.0f * sigma_s * sigma_s);
   const float inv_2_sigma_r2 = 1.0f / (2.0f * sigma_r * sigma_r);
-
+float somma=0, num=0;
   for (int y = 0; y < height; ++y) {
     for (int x = 0; x < width; ++x) {
       const int idx0 = y * width + x;
@@ -84,14 +84,37 @@ void bilateral_u8_gray(unsigned char *h_input, unsigned char *in, unsigned char 
       out[idx0] = (unsigned char)clampi(ir, 0, 255);
       */
       float peso = (sum/wsum)/center;
+      if(peso>2){
+        peso=2;
+      } else {
+        somma+=peso;
+        num++;
+      }
       int tmp = (int)lroundf(h_input[idx0*3]*peso);
       out[idx0*3] = (unsigned char)clampi(tmp, 0, 255);
       tmp = (int)lroundf(h_input[idx0*3+1]*peso);
         out[idx0*3+1] = (unsigned char)clampi(tmp, 0, 255);
         tmp = (int)lroundf(h_input[idx0*3+2]*peso);
         out[idx0*3+2] = (unsigned char)clampi(tmp, 0, 255);
+
+
+       if (idx0 > (height * width) / 2 && out[idx0 * 3] >= 200&&peso>=2 ) {
+    printf("idx0 = %d, peso=%f\n", idx0,peso);
+      
+    printf("original (h_input): R=%u G=%u B=%u\n",
+           h_input[idx0 * 3],
+           h_input[idx0 * 3 + 1],
+           h_input[idx0 * 3 + 2]);
+
+    printf("new (out):          R=%u G=%u B=%u\n",
+           out[idx0 * 3],
+           out[idx0 * 3 + 1],
+           out[idx0 * 3 + 2]);
+}
+
     }
   }
+  printf("valore medio peso %f", somma/num);
 }
 
 int main(int argc, char **argv) {
