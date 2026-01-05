@@ -16,7 +16,7 @@ static inline int clampi(int v, int lo, int hi) {
   return (v < lo) ? lo : (v > hi) ? hi : v;
 }
 
-__global__ void grayscale_cpu(unsigned char* input, unsigned char* output, int width, int height) {
+__global__ void grayscale(unsigned char* input, unsigned char* output, int width, int height) {
   int x = blockIdx.x * blockDim.x + threadIdx.x;
   int y = blockIdx.y * blockDim.y + threadIdx.y;
 
