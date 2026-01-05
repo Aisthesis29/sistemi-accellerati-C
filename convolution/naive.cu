@@ -33,7 +33,7 @@ __global__ void grayscale(unsigned char* input, unsigned char* output, int width
     }
 }
 
-void bilateral_u8_gray(unsigned char *h_input, unsigned char *in, unsigned char *out, int width, int height, int radius, int sigma_s, int sigma_r) {
+__global__ void bilateral_u8_gray(unsigned char *h_input, unsigned char *in, unsigned char *out, int width, int height, int radius, int sigma_s, int sigma_r) {
     if(!in || !out || ! h_input) {
         printf("errore nel caricamento di una matrice\n");
         printf("in=[%d]\t", in);
