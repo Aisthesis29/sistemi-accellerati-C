@@ -19,20 +19,20 @@ static inline int clampi(int v, int lo, int hi) {
 // Versione CPU per confronto
 // Versione CPU per confronto
 void grayscale_cpu(unsigned char* input, unsigned char* output, int width, int height) {
-  for (int y = 0; y < height; y++) {
-      for (int x = 0; x < width; x++) {
-          int idx = (y * width + x) * 3;
-          
-          unsigned char r = input[idx + 0];
-          unsigned char g = input[idx + 1];
-          unsigned char b = input[idx + 2];
-          
-          unsigned char gray = (unsigned char)(0.299f * r + 0.587f * g + 0.114f * b);
-          
-          int out_idx = y * width + x;
-          output[out_idx] = gray;
-      }
-  }
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                int idx = (y * width + x) * 3;
+                
+                unsigned char r = input[idx + 0];
+                unsigned char g = input[idx + 1];
+                unsigned char b = input[idx + 2];
+                
+                unsigned char gray = (unsigned char)(0.299f * r + 0.587f * g + 0.114f * b);
+                
+                int out_idx = y * width + x;
+                output[out_idx] = gray;
+            }
+        }
 }
 /*__global__ void grayscale_cpu(unsigned char* input, unsigned char* output, int width, int height) {
   int x = blockIdx.x * blockDim.x + threadIdx.x;
