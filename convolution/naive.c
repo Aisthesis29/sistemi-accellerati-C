@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-//#include <cuda_runtime.h>
+#include <cuda_runtime.h>
 #include <string.h>
 #include <time.h>
 #include <stdint.h>
@@ -17,7 +17,24 @@ static inline int clampi(int v, int lo, int hi) {
 }
 
 // Versione CPU per confronto
-__global__ void grayscale_cpu(unsigned char* input, unsigned char* output, int width, int height) {
+// Versione CPU per confronto
+void grayscale_cpu(unsigned char* input, unsigned char* output, int width, int height) {
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                int idx = (y * width + x) * 3;
+                
+                unsigned char r = input[idx + 0];
+                unsigned char g = input[idx + 1];
+                unsigned char b = input[idx + 2];
+                
+                unsigned char gray = (unsigned char)(0.299f * r + 0.587f * g + 0.114f * b);
+                
+                int out_idx = y * width + x;
+                output[out_idx] = gray;
+            }
+        }
+}
+/*__global__ void grayscale_cpu(unsigned char* input, unsigned char* output, int width, int height) {
   int x = blockIdx.x * blockDim.x + threadIdx.x;
   int y = blockIdx.y * blockDim.y + threadIdx.y;
 
@@ -32,7 +49,7 @@ __global__ void grayscale_cpu(unsigned char* input, unsigned char* output, int w
     int out_idx = y * width + x;
     output[out_idx] = gray;
   }
-}
+}*/
 
 void bilateral_u8_gray(unsigned char *h_input, unsigned char *in, unsigned char *out, int width, int height, int radius, int sigma_s, int sigma_r) {
   if(!in || !out || ! h_input) {
