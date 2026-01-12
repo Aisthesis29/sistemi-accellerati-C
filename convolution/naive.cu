@@ -14,11 +14,25 @@
 #define DEBUG_IDX 2
 
 
-__device__ int clampi(int v, int lo, int hi) {
+/*__device__ int clampi(int v, int lo, int hi) {
     return (v < lo) ? lo : (v > hi) ? hi : v;
 }
 static inline int clampi_cpu(int v, int lo, int hi) {
     return (v < lo) ? lo : (v > hi) ? hi : v;
+}*/
+
+__device__ int min(int v1, int v2) {
+  return (v1 > v2) ? v2 : v1;
+}
+__device__ int max(int v1, int v2) {
+  return (v1 < v2) ? v2 : v1;
+}
+
+static inline int min_cpu(int v1, int v2) {
+  return (v1 > v2) ? v2 : v1;
+}
+static inline int max_cpu(int v1, int v2) {
+  return (v1 < v2) ? v2 : v1;
 }
 
 #define CHECK(call) \
@@ -41,6 +55,7 @@ __global__ void bilateral_u8_gray(unsigned char *h_input, unsigned char *out, in
     int x = blockIdx.x * blockDim.x + threadIdx.x;
     int y = blockIdx.y * blockDim.y + threadIdx.y;
 
+    int y0, yn, x0, xn;
     const float inv_2_sigma_s2 = 1.0f / (2.0f * sigma_s * sigma_s);
     const float inv_2_sigma_r2 = 1.0f / (2.0f * sigma_r * sigma_r);
         
@@ -55,12 +70,17 @@ __global__ void bilateral_u8_gray(unsigned char *h_input, unsigned char *out, in
         float sum_g = 0.0f;
         float sum_b = 0.0f;
 
+        y0 = max(y-radius, 0);
+        yn = min(y+radius, height-1);
+        x0 = max(x-radius, 0);
+        xn = min(x+radius, width-1);
         for (int dy = -radius; dy <= radius; ++dy) {
-            const int yy = clampi(y + dy, 0, height - 1);
+            //const int yy = clampi(y + dy, 0, height - 1);
 
             for (int dx = -radius; dx <= radius; ++dx) {
-                const int xx = clampi(x + dx, 0, width - 1);
-                const int idx = yy * width + xx;
+                //const int xx = clampi(x + dx, 0, width - 1);
+                //const int idx = yy * width + xx;
+                int idx = dy * width + dx;
 
                 int val_r = (int)h_input[idx*3];
                 int val_g = (int)h_input[idx*3+1];
@@ -144,6 +164,7 @@ void bilateral_u8_gray_cpu(unsigned char *h_input, unsigned char *out, int width
     if (sigma_s <= 0 || sigma_r <= 0) 
         return;
 
+    int y0, yn, x0, xn;
     const float inv_2_sigma_s2 = 1.0f / (2.0f * sigma_s * sigma_s);
     const float inv_2_sigma_r2 = 1.0f / (2.0f * sigma_r * sigma_r);
     for (int y = 0; y < height; ++y) {
@@ -158,12 +179,17 @@ void bilateral_u8_gray_cpu(unsigned char *h_input, unsigned char *out, int width
             float sum_g = 0.0f;
             float sum_b = 0.0f;
 
-            for (int dy = -radius; dy <= radius; ++dy) {
-                int yy = clampi_cpu(y + dy, 0, height - 1);
+            y0 = max_cpu(y-radius, 0);
+            yn = min_cpu(y+radius, height-1);
+            x0 = max_cpu(x-radius, 0);
+            xn = min_cpu(x+radius, width-1);
+            for (int dy = y0; dy <= yn; ++dy) {
+                //int yy = clampi_cpu(y + dy, 0, height - 1);
 
-                for (int dx = -radius; dx <= radius; ++dx) {
-                    int xx = clampi_cpu(x + dx, 0, width - 1);
-                    int idx = yy * width + xx;
+                for (int dx = x0; dx <= xn; ++dx) {
+                    //int xx = clampi_cpu(x + dx, 0, width - 1);
+                    //int idx = yy * width + xx;
+                    int idx = dy * width + dx;
 
                     int val_r = (int)h_input[idx*3];
                     int val_g = (int)h_input[idx*3+1];
