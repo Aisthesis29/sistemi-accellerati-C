@@ -74,10 +74,10 @@ __global__ void bilateral_u8_gray(unsigned char *h_input, unsigned char *out, in
         yn = min(y+radius, height-1);
         x0 = max(x-radius, 0);
         xn = min(x+radius, width-1);
-        for (int dy = -radius; dy <= radius; ++dy) {
+        for (int dy = y0; dy <= yn; ++dy) {
             //const int yy = clampi(y + dy, 0, height - 1);
 
-            for (int dx = -radius; dx <= radius; ++dx) {
+            for (int dx = x0; dx <= xn; ++dx) {
                 //const int xx = clampi(x + dx, 0, width - 1);
                 //const int idx = yy * width + xx;
                 int idx = dy * width + dx;
