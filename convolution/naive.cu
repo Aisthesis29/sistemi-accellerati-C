@@ -21,12 +21,12 @@ static inline int clampi_cpu(int v, int lo, int hi) {
     return (v < lo) ? lo : (v > hi) ? hi : v;
 }*/
 
-__device__ int min(int v1, int v2) {
+/*__device__ int min(int v1, int v2) {
   return (v1 > v2) ? v2 : v1;
 }
 __device__ int max(int v1, int v2) {
   return (v1 < v2) ? v2 : v1;
-}
+}*/
 
 static inline int min_cpu(int v1, int v2) {
   return (v1 > v2) ? v2 : v1;
