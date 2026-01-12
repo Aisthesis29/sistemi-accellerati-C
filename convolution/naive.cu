@@ -292,8 +292,8 @@ int main(int argc, char **argv) {
     bilateral_u8_gray<<<grid, block>>>(d_input, d_output, width, height, radius, sigma_s, sigma_r);
 
     // ========== Salvataggio immagini ==========
-    //CHECK(cudaMemcpy(h_output, d_output, imageSize, cudaMemcpyDeviceToHost));
-    CHECK(cudaMemcpy(d_output, h_output, imageSize, cudaMemcpyDeviceToHost));
+    CHECK(cudaMemcpy(h_output, d_output, imageSize, cudaMemcpyDeviceToHost));
+    //CHECK(cudaMemcpy(d_output, h_output, imageSize, cudaMemcpyDeviceToHost));
     CHECK(cudaGetLastError());
     CHECK(cudaDeviceSynchronize());
     stbi_write_png("risultato.png", width, height, channels, h_output, width * channels);
