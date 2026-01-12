@@ -11,7 +11,7 @@
 #include "stb_image.h"
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
-#define DEBUG_IDX 2
+#define DEBUG_IDX 1991
 
 
 /*__device__ int clampi(int v, int lo, int hi) {
@@ -86,7 +86,7 @@ __global__ void bilateral_u8_gray(unsigned char *h_input, unsigned char *out, in
                 int val_g = (int)h_input[idx*3+1];
                 int val_b = (int)h_input[idx*3+2];
 
-                int ds2 = (int)(dx * dx + dy * dy);
+                int ds2 = (dx-x) * (dx-x) + (dy-y) * (dy-y);
                 int dr  = abs(val_r - center_r)+abs(val_g - center_g)+abs(val_b - center_b);
                 int dr2 = dr * dr;
 
@@ -195,7 +195,7 @@ void bilateral_u8_gray_cpu(unsigned char *h_input, unsigned char *out, int width
                     int val_g = (int)h_input[idx*3+1];
                     int val_b = (int)h_input[idx*3+2];
 
-                    int ds2 = (dx * dx + dy * dy);
+                    int ds2 = (dx-x) * (dx-x) + (dy-y) * (dy-y);
                     int dr  = abs(val_r - center_r)+abs(val_g - center_g)+abs(val_b - center_b);
                     int dr2 = dr * dr;
 
