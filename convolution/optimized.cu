@@ -115,9 +115,12 @@ __global__ void bilateral_u8_gray(unsigned char *h_input, unsigned char *out, in
             }
         }
         float inv_Wsum = 1.f/wsum;
-        out[idx0*3] = (unsigned char)(sum_r*inv_Wsum+0.5f);
-        out[idx0*3+1] = (unsigned char)(sum_g*inv_Wsum+0.5f);
-        out[idx0*3+2] = (unsigned char)(sum_b*inv_Wsum+0.5f);
+       // out[idx0*3] = (unsigned char)(sum_r*inv_Wsum+0.5f);
+        //out[idx0*3+1] = (unsigned char)(sum_g*inv_Wsum+0.5f);
+        //out[idx0*3+2] = (unsigned char)(sum_b*inv_Wsum+0.5f);
+       
+       
+       
         /*if(idx0==DEBUG_IDX){
            printf("gPU idx=%d\npeso = %.9f\nin   = R:%d G:%d B:%d\n"
                   "in*peso   = R:%.9f G:%.9f B:%.9f\ntmp  = R:%d G:%d B:%d\n",
