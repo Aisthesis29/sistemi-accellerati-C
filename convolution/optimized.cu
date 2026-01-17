@@ -62,7 +62,7 @@ __global__ void bilateral_u8_gray(unsigned char *h_input, unsigned char *out, in
     if (x < width && y < height) {
         const int idx0 = y * width + x;
         int center_r = (int)h_input[idx0*3];
-        int cente r_g = (int)h_input[idx0*3+1];
+        int center_g = (int)h_input[idx0*3+1];
         int center_b = (int)h_input[idx0*3+2];
 
         float wsum = 0.0f;
