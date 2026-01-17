@@ -262,8 +262,7 @@ int main(int argc, char **argv) {
     int sigma_s = atoi(argv[3]);
     int  sigma_r = atoi(argv[4]);*/
 
-    int blockSize_w = 16;
-    int blockSize_h = 8;
+    int blockSize = 16;
 
     // ========== Caricamento immagine ==========
     int width, height, channels;
@@ -287,7 +286,7 @@ int main(int argc, char **argv) {
 
     CHECK(cudaMemcpy(d_input, h_input, imageSize, cudaMemcpyHostToDevice));
 
-    dim3 block(blockSize_w, blockSize_h);
+    dim3 block(blockSize, blockSize);
     dim3 grid((width + block.x - 1) / block.x, (height + block.y - 1) / block.y);
     // ========== Operazione reali ==========
     bilateral_u8_gray<<<grid, block>>>(d_input, d_output, width, height, radius, sigma_s, sigma_r);
