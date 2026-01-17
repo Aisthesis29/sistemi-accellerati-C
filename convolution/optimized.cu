@@ -92,8 +92,11 @@ __global__ void bilateral_u8_gray(unsigned char *h_input, unsigned char *out, in
                 int dr  = abs(val_r - center_r)+abs(val_g - center_g)+abs(val_b - center_b);
                 int dr2 = dr * dr;
 
-                const float w_s = expf(-ds2 * inv_2_sigma_s2);
-                const float w_r = expf(-dr2 * inv_2_sigma_r2);
+                //const float w_s = expf(-ds2 * inv_2_sigma_s2);
+                //const float w_r = expf(-dr2 * inv_2_sigma_r2);
+                const float w_s = 0.8f;
+                const float w_r =0.05f;
+                
                 const float w   = w_s * w_r;
                 //if(idx0==DEBUG_IDX)
                     //printf("gpu w_r: %f w_s:%f,val=%d\n", w_r,w_s,val);
