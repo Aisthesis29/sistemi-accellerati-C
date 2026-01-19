@@ -306,14 +306,14 @@ int main(int argc, char **argv) {
 
     //color weight
     const float inv_2_sigma_r2 = 1.0f / (2.0f * sigma_r * sigma_r);
-    float color_weight[cn*256];
-for( i = 0; i < 256 * cn; i++ ){
+    float color_weight[channels*256];
+for( i = 0; i < 256 * channels; i++ ){
         color_weight[i] = expf(i * i * inv_2_sigma_r2);
 }
     float *d_color_weight;
 
-    CHECK(cudaMalloc((void**)&d_color_weight, sizeof(float)*cn*256));
-    CHECK(cudaMemcpy(d_color_weight, color_weight, sizeof(float)*cn*256, cudaMemcpyHostToDevice));
+    CHECK(cudaMalloc((void**)&d_color_weight, sizeof(float)*channels*256));
+    CHECK(cudaMemcpy(d_color_weight, color_weight, sizeof(float)*channels*256, cudaMemcpyHostToDevice));
     bilateral_u8_gray<<<grid, block>>>(d_input, d_output, width, height, radius, d_space_weight, d_color_weight, dim_kernel);
 
     // ========== Salvataggio immagini ==========
