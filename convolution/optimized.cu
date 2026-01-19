@@ -89,7 +89,7 @@ __global__ void bilateral_u8_gray(uchar4 *d_input, unsigned char *out, int width
                 int dr  = abs(val_r - center_r)+abs(val_g - center_g)+abs(val_b - center_b);
                 int dr2 = dr * dr;
 
-                const float w_r = expf(-ds2 * inv_2_sigma_s2);
+                const float w_r = expf(-dr2 * inv_2_sigma_r2);
                 float w = space_weight[(dx-x+radius)*dim_kernel+(dy-y+radius)] * w_r;
                 //const float w   = w_s * w_r;
                 //if(idx0==DEBUG_IDX)
