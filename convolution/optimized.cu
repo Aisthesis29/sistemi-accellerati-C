@@ -46,12 +46,12 @@ static inline int max_cpu(int v1, int v2) {
     } \
 }
 
-__global__ void bilateral_u8_gray(uchar4 *d_input, unsigned char *out, int width, int height, int radius, float *space_weight, int sigma_r, int dim_kernel) {
+__global__ void bilateral_u8_gray(uchar4 *d_input, unsigned char *out, int width, int height, int radius, float *space_weight, float *color_weight, int dim_kernel) {
     int x = blockIdx.x * blockDim.x + threadIdx.x;
     int y = blockIdx.y * blockDim.y + threadIdx.y;
 
     int y0, yn, x0, xn;
-    const float inv_2_sigma_r2 = 1.0f / (2.0f * sigma_r * sigma_r);
+    //const float inv_2_sigma_r2 = 1.0f / (2.0f * sigma_r * sigma_r);
         
     if (x < width && y < height) {
         const int idx0 = y * width + x;
@@ -301,7 +301,8 @@ int main(int argc, char **argv) {
     }
     int convSize=(dim_kernel*dim_kernel)*sizeof(float);
     float *d_space_weight;
-
+    CHECK(cudaMalloc((void**)&d_space_weight, convSize));
+    CHECK(cudaMemcpy(d_space_weight, space_weight, convSize, cudaMemcpyHostToDevice));
 
     //color weight
     const float inv_2_sigma_r2 = 1.0f / (2.0f * sigma_r * sigma_r);
@@ -309,10 +310,11 @@ int main(int argc, char **argv) {
 for( i = 0; i < 256 * cn; i++ ){
         color_weight[i] = expf(i * i * inv_2_sigma_r2);
 }
+    float *d_color_weight;
 
-    CHECK(cudaMalloc((void**)&d_space_weight, convSize));
-    CHECK(cudaMemcpy(d_space_weight, space_weight, convSize, cudaMemcpyHostToDevice));
-    bilateral_u8_gray<<<grid, block>>>(d_input, d_output, width, height, radius, d_space_weight, sigma_r, dim_kernel);
+    CHECK(cudaMalloc((void**)&d_color_weight, sizeof(float)*cn*256));
+    CHECK(cudaMemcpy(d_color_weight, color_weight, sizeof(float)*cn*256, cudaMemcpyHostToDevice));
+    bilateral_u8_gray<<<grid, block>>>(d_input, d_output, width, height, radius, d_space_weight, d_color_weight, dim_kernel);
 
     // ========== Salvataggio immagini ==========
     CHECK(cudaMemcpy(h_output, d_output, imageSize, cudaMemcpyDeviceToHost));
