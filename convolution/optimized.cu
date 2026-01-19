@@ -46,7 +46,7 @@ static inline int max_cpu(int v1, int v2) {
     } \
 }
 
-__global__ void bilateral_u8_gray(unsigned char *h_input, unsigned char *out, int width, int height, int radius, float *space_weight, int sigma_r) {
+__global__ void bilateral_u8_gray(unsigned char *h_input, unsigned char *out, int width, int height, int radius, float *space_weight, int sigma_r, int dim_kernel) {
     int x = blockIdx.x * blockDim.x + threadIdx.x;
     int y = blockIdx.y * blockDim.y + threadIdx.y;
 
@@ -89,7 +89,7 @@ __global__ void bilateral_u8_gray(unsigned char *h_input, unsigned char *out, in
 
                 const float w_r = expf(-dr2 * inv_2_sigma_r2);
                 float w = space_weight[(dx-x+radius)*dim_kernel+(dy-y+radius)] * w_r;
-                const float w   = w_s * w_r;
+                //const float w   = w_s * w_r;
                 //if(idx0==DEBUG_IDX)
                     //printf("gpu w_r: %f w_s:%f,val=%d\n", w_r,w_s,val);
 
@@ -302,7 +302,7 @@ int main(int argc, char **argv) {
     float *d_space_weight;
     CHECK(cudaMalloc((void**)&d_space_weight, convSize));
     CHECK(cudaMemcpy(d_space_weight, space_weight, convSize, cudaMemcpyHostToDevice));
-    bilateral_u8_gray<<<grid, block>>>(d_input, d_output, width, height, radius, d_space_weight, sigma_r);
+    bilateral_u8_gray<<<grid, block>>>(d_input, d_output, width, height, radius, d_space_weight, sigma_r, dim_kernel);
 
     // ========== Salvataggio immagini ==========
     CHECK(cudaMemcpy(h_output, d_output, imageSize, cudaMemcpyDeviceToHost));
