@@ -287,7 +287,7 @@ int main(int argc, char **argv) {
     CHECK(cudaMalloc((void**)&d_input, (width*height*4)));  //matchata al 4 della stbi_load in riga 269
     CHECK(cudaMalloc((void**)&d_output, imageSize));
 
-    CHECK(cudaMemcpy(d_input, h_input, imageSize, cudaMemcpyHostToDevice));
+    CHECK(cudaMemcpy(d_input, h_input,  (width*height*4), cudaMemcpyHostToDevice)); //match anche qui
 
     dim3 block(blockSize, blockSize);
     dim3 grid((width + block.x - 1) / block.x, (height + block.y - 1) / block.y);
