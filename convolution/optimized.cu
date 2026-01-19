@@ -326,7 +326,7 @@ for( int i = 0; i < 256 * cn; i++ ){
     printf("Finito bilateral gpu!!\n");
 
     //Parte CPU + controllo
-    /*unsigned char* h_output_cpu = (unsigned char*)malloc(imageSize);
+    unsigned char* h_output_cpu = (unsigned char*)malloc(imageSize);
     bilateral_u8_gray_cpu(h_input, h_output_cpu, width, height, radius, sigma_s, sigma_r);
     
     bool correct = verifyResults(h_output_cpu, h_output, imageSize, "GPU");
@@ -334,11 +334,11 @@ for( int i = 0; i < 256 * cn; i++ ){
         printf("✓ Test PASSATO: GPU e CPU producono lo stesso risultato\n");
     } else {
         printf("Fallito\n");
-    }*/
+    }
 
     free(h_input);
     free(h_output);
-    //free(h_output_cpu);
+    free(h_output_cpu);
     CHECK(cudaFree(d_input));
     CHECK(cudaFree(d_output));
 
