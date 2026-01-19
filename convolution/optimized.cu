@@ -266,7 +266,7 @@ int main(int argc, char **argv) {
     // ========== Caricamento immagine ==========
     int width, height, channels;
     
-    unsigned char* h_input = stbi_load(inputFile, &width, &height, &channels, 0);
+    unsigned char* h_input = stbi_load(inputFile, &width, &height, &channels, 4);
     if (!h_input) {
         printf("Error loading image %s\n", inputFile);
         return 1;
@@ -281,7 +281,7 @@ int main(int argc, char **argv) {
     // ========== Allocazione device ==========
     uchar4 *d_input;
     unsigned char *d_output;
-    CHECK(cudaMalloc((void**)&d_input, (width*height*4)));
+    CHECK(cudaMalloc((void**)&d_input, (width*height*4)));  //matchata al 4 della stbi_load in riga 269
     CHECK(cudaMalloc((void**)&d_output, imageSize));
 
     CHECK(cudaMemcpy(d_input, h_input, imageSize, cudaMemcpyHostToDevice));
