@@ -281,7 +281,7 @@ int main(int argc, char **argv) {
     // ========== Allocazione device ==========
     uchar4 *d_input;
     unsigned char *d_output;
-    CHECK(cudaMalloc((void**)&d_input, imageSize));
+    CHECK(cudaMalloc((void**)&d_input, (width*height*4)));
     CHECK(cudaMalloc((void**)&d_output, imageSize));
 
     CHECK(cudaMemcpy(d_input, h_input, imageSize, cudaMemcpyHostToDevice));
