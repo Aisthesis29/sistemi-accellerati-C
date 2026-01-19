@@ -84,9 +84,9 @@ __global__ void bilateral_u8_gray(uchar4 *d_input, unsigned char *out, int width
                 int val_b = (int)val.z;
 
                 int dr  = abs(val_r - center_r)+abs(val_g - center_g)+abs(val_b - center_b);
-                int dr2 = dr * dr;
+                //int dr2 = dr * dr;
 
-                const float w_r = expf(-dr2 * inv_2_sigma_r2);
+                const float w_r = color_weight[dr];
                 float w = space_weight[(dx-x+radius)*dim_kernel+(dy-y+radius)] * w_r;
                 //const float w   = w_s * w_r;
                 //if(idx0==DEBUG_IDX)
@@ -292,6 +292,7 @@ int main(int argc, char **argv) {
     int ds2;
     float space_weight[dim_kernel][dim_kernel];
     const float inv_2_sigma_s2 = 1.0f / (2.0f * sigma_s * sigma_s);
+    //space weight
     for(int i=-radius; i<=radius; i++) {
         for(int j=-radius; j<=radius; j++) {
             ds2 = (i*i)+(j*j);
@@ -300,6 +301,15 @@ int main(int argc, char **argv) {
     }
     int convSize=(dim_kernel*dim_kernel)*sizeof(float);
     float *d_space_weight;
+
+
+    //color weight
+    const float inv_2_sigma_r2 = 1.0f / (2.0f * sigma_r * sigma_r);
+    float color_weight[cn*256];
+for( i = 0; i < 256 * cn; i++ ){
+        color_weight[i] = expf(i * i * inv_2_sigma_r2);
+}
+
     CHECK(cudaMalloc((void**)&d_space_weight, convSize));
     CHECK(cudaMemcpy(d_space_weight, space_weight, convSize, cudaMemcpyHostToDevice));
     bilateral_u8_gray<<<grid, block>>>(d_input, d_output, width, height, radius, d_space_weight, sigma_r, dim_kernel);
