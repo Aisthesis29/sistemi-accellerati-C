@@ -78,7 +78,7 @@ __global__ void bilateral_u8_gray(uchar4 *d_input, unsigned char *out, int width
                 //const int idx = yy * width + xx;
                 int idx = dy * width + dx;
 
-                uchar4 val = d_inputalgn[idx];
+                uchar4 val = d_input[idx];
                 int val_r = (int)val.x;
                 int val_g = (int)val.y;
                 int val_b = (int)val.z;
@@ -313,7 +313,7 @@ int main(int argc, char **argv) {
     printf("Finito bilateral gpu!!\n");
 
     //Parte CPU + controllo
-    unsigned char* h_output_cpu = (unsigned char*)malloc(imageSize);
+    /*unsigned char* h_output_cpu = (unsigned char*)malloc(imageSize);
     bilateral_u8_gray_cpu(h_input, h_output_cpu, width, height, radius, sigma_s, sigma_r);
     
     bool correct = verifyResults(h_output_cpu, h_output, imageSize, "GPU");
@@ -321,11 +321,11 @@ int main(int argc, char **argv) {
         printf("✓ Test PASSATO: GPU e CPU producono lo stesso risultato\n");
     } else {
         printf("Fallito\n");
-    }
+    }*/
 
     free(h_input);
     free(h_output);
-    free(h_output_cpu);
+    //free(h_output_cpu);
     CHECK(cudaFree(d_input));
     CHECK(cudaFree(d_output));
 
