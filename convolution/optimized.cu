@@ -46,7 +46,7 @@ static inline int max_cpu(int v1, int v2) {
     } \
 }
 
-__global__ void bilateral_u8_gray(unsigned char *h_input, unsigned char *out, int width, int height, int radius, float *space_weight, int sigma_r, int dim_kernel) {
+__global__ void bilateral_u8_gray(uchar4 *h_input, unsigned char *out, int width, int height, int radius, float *space_weight, int sigma_r, int dim_kernel) {
     int x = blockIdx.x * blockDim.x + threadIdx.x;
     int y = blockIdx.y * blockDim.y + threadIdx.y;
 
@@ -55,13 +55,11 @@ __global__ void bilateral_u8_gray(unsigned char *h_input, unsigned char *out, in
         
     if (x < width && y < height) {
         const int idx0 = y * width + x;
-        //int center_r = (int)h_input[idx0*3];
-        //int center_g = (int)h_input[idx0*3+1];
-        //int center_b = (int)h_input[idx0*3+2];
 
-        int center_r = (int)h_input[idx0*3];
-        int center_g = (int)h_input[idx0*3+1];
-        int center_b = (int)h_input[idx0*3+2];
+        uchar4 pixel = rgba[idx0];
+        int center_r = (int)pixel.x;
+        int center_g = (int)pixel.y;
+        int center_b = (int)pixel.z;
 
         float wsum = 0.0f;
         float sum_r = 0.0f;
@@ -80,9 +78,10 @@ __global__ void bilateral_u8_gray(unsigned char *h_input, unsigned char *out, in
                 //const int idx = yy * width + xx;
                 int idx = dy * width + dx;
 
-                int val_r = (int)h_input[idx*3];
-                int val_g = (int)h_input[idx*3+1];
-                int val_b = (int)h_input[idx*3+2];
+                uchar4 val = rgba[idx];
+                int val_r = (int)val.x;
+                int val_g = (int)val.y;
+                int val_b = (int)val.z;
 
                 int dr  = abs(val_r - center_r)+abs(val_g - center_g)+abs(val_b - center_b);
                 int dr2 = dr * dr;
@@ -280,7 +279,8 @@ int main(int argc, char **argv) {
     unsigned char* h_output = (unsigned char*)malloc(imageSize);
 
     // ========== Allocazione device ==========
-    unsigned char *d_output, *d_input;
+    uchar4 *d_input;
+    unsigned char *d_output;
     CHECK(cudaMalloc((void**)&d_input, imageSize));
     CHECK(cudaMalloc((void**)&d_output, imageSize));
 
