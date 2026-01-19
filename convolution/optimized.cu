@@ -306,7 +306,7 @@ int main(int argc, char **argv) {
 
     //color weight
     const float inv_2_sigma_r2 = 1.0f / (2.0f * sigma_r * sigma_r);
-    int cn=channels;
+    const int cn=channels;
     float color_weight[cn*256];
 for( i = 0; i < 256 * cn; i++ ){
         color_weight[i] = expf(i * i * inv_2_sigma_r2);
