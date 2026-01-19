@@ -46,28 +46,22 @@ static inline int max_cpu(int v1, int v2) {
     } \
 }
 
-__global__ void bilateral_u8_gray(unsigned char *h_input, unsigned char *out, int width, int height, int radius, int sigma_s, int sigma_r) {
-    if (!out || width <= 0 || height <= 0 || radius < 0) 
-        return;
-    if (sigma_s <= 0 || sigma_r <= 0) 
-        return;
-
+__global__ void bilateral_u8_gray(unsigned char *h_input, unsigned char *out, int width, int height, int radius, float *space_weight, int sigma_r) {
     int x = blockIdx.x * blockDim.x + threadIdx.x;
     int y = blockIdx.y * blockDim.y + threadIdx.y;
 
     int y0, yn, x0, xn;
-    const float inv_2_sigma_s2 = 1.0f / (2.0f * sigma_s * sigma_s);
     const float inv_2_sigma_r2 = 1.0f / (2.0f * sigma_r * sigma_r);
         
     if (x < width && y < height) {
         const int idx0 = y * width + x;
         //int center_r = (int)h_input[idx0*3];
         //int center_g = (int)h_input[idx0*3+1];
-       // int center_b = (int)h_input[idx0*3+2];
+        //int center_b = (int)h_input[idx0*3+2];
 
-        int center_r = 55;
-        int center_g = 55;
-        int center_b = 55;
+        int center_r = (int)h_input[idx0*3];
+        int center_g = (int)h_input[idx0*3+1];
+        int center_b = (int)h_input[idx0*3+2];
 
         float wsum = 0.0f;
         float sum_r = 0.0f;
@@ -86,21 +80,15 @@ __global__ void bilateral_u8_gray(unsigned char *h_input, unsigned char *out, in
                 //const int idx = yy * width + xx;
                 int idx = dy * width + dx;
 
-                //int val_r = (int)h_input[idx*3];
-                //int val_g = (int)h_input[idx*3+1];
-                //int val_b = (int)h_input[idx*3+2];
-                int val_r = 255;
-                int val_g = 255;
-                int val_b =255;
-                int ds2 = (dx-x) * (dx-x) + (dy-y) * (dy-y);
+                int val_r = (int)h_input[idx*3];
+                int val_g = (int)h_input[idx*3+1];
+                int val_b = (int)h_input[idx*3+2];
+
                 int dr  = abs(val_r - center_r)+abs(val_g - center_g)+abs(val_b - center_b);
                 int dr2 = dr * dr;
 
-                //const float w_s = expf(-ds2 * inv_2_sigma_s2);
-                //const float w_r = expf(-dr2 * inv_2_sigma_r2);
-                const float w_s = 0.8f;
-                const float w_r =0.05f;
-                
+                const float w_r = expf(-dr2 * inv_2_sigma_r2);
+                float w = space_weight[(dx-x+radius)*dim_kernel+(dy-y+radius)] * w_r;
                 const float w   = w_s * w_r;
                 //if(idx0==DEBUG_IDX)
                     //printf("gpu w_r: %f w_s:%f,val=%d\n", w_r,w_s,val);
@@ -115,9 +103,9 @@ __global__ void bilateral_u8_gray(unsigned char *h_input, unsigned char *out, in
             }
         }
         float inv_Wsum = 1.f/wsum;
-       // out[idx0*3] = (unsigned char)(sum_r*inv_Wsum+0.5f);
-        //out[idx0*3+1] = (unsigned char)(sum_g*inv_Wsum+0.5f);
-        //out[idx0*3+2] = (unsigned char)(sum_b*inv_Wsum+0.5f);
+        out[idx0*3] = (unsigned char)(sum_r*inv_Wsum+0.5f);
+        out[idx0*3+1] = (unsigned char)(sum_g*inv_Wsum+0.5f);
+        out[idx0*3+2] = (unsigned char)(sum_b*inv_Wsum+0.5f);
        
        
        
@@ -301,7 +289,20 @@ int main(int argc, char **argv) {
     dim3 block(blockSize, blockSize);
     dim3 grid((width + block.x - 1) / block.x, (height + block.y - 1) / block.y);
     // ========== Operazione reali ==========
-    bilateral_u8_gray<<<grid, block>>>(d_input, d_output, width, height, radius, sigma_s, sigma_r);
+    int ds2;
+    float space_weight[dim_kernel][dim_kernel];
+    const float inv_2_sigma_s2 = 1.0f / (2.0f * sigma_s * sigma_s);
+    for(int i=-radius; i<=radius; i++) {
+        for(int j=-radius; j<=radius; j++) {
+            ds2 = (i*i)+(j*j);
+            space_weight[i+radius][j+radius] = expf(-ds2 * inv_2_sigma_s2);
+        }
+    }
+    int convSize=(dim_kernel*dim_kernel)*sizeof(float);
+    float *d_space_weight;
+    CHECK(cudaMalloc((void**)&d_space_weight, convSize));
+    CHECK(cudaMemcpy(d_space_weight, space_weight, convSize, cudaMemcpyHostToDevice));
+    bilateral_u8_gray<<<grid, block>>>(d_input, d_output, width, height, radius, d_space_weight, sigma_r);
 
     // ========== Salvataggio immagini ==========
     CHECK(cudaMemcpy(h_output, d_output, imageSize, cudaMemcpyDeviceToHost));

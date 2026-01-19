@@ -47,11 +47,6 @@ static inline int max_cpu(int v1, int v2) {
 }
 
 __global__ void bilateral_u8_gray(unsigned char *h_input, unsigned char *out, int width, int height, int radius, int sigma_s, int sigma_r) {
-    if (!out || width <= 0 || height <= 0 || radius < 0) 
-        return;
-    if (sigma_s <= 0 || sigma_r <= 0) 
-        return;
-
     int x = blockIdx.x * blockDim.x + threadIdx.x;
     int y = blockIdx.y * blockDim.y + threadIdx.y;
 
