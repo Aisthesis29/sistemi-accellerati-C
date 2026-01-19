@@ -46,7 +46,7 @@ static inline int max_cpu(int v1, int v2) {
     } \
 }
 
-__global__ void bilateral_u8_gray(uchar4 *h_input, unsigned char *out, int width, int height, int radius, float *space_weight, int sigma_r, int dim_kernel) {
+__global__ void bilateral_u8_gray(uchar4 *d_input, unsigned char *out, int width, int height, int radius, float *space_weight, int sigma_r, int dim_kernel) {
     int x = blockIdx.x * blockDim.x + threadIdx.x;
     int y = blockIdx.y * blockDim.y + threadIdx.y;
 
@@ -56,7 +56,7 @@ __global__ void bilateral_u8_gray(uchar4 *h_input, unsigned char *out, int width
     if (x < width && y < height) {
         const int idx0 = y * width + x;
 
-        uchar4 pixel = rgba[idx0];
+        uchar4 pixel = d_input[idx0];
         int center_r = (int)pixel.x;
         int center_g = (int)pixel.y;
         int center_b = (int)pixel.z;
@@ -78,7 +78,7 @@ __global__ void bilateral_u8_gray(uchar4 *h_input, unsigned char *out, int width
                 //const int idx = yy * width + xx;
                 int idx = dy * width + dx;
 
-                uchar4 val = rgba[idx];
+                uchar4 val = d_inputalgn[idx];
                 int val_r = (int)val.x;
                 int val_g = (int)val.y;
                 int val_b = (int)val.z;
