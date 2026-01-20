@@ -89,7 +89,7 @@ __global__ void bilateral_u8_gray(uchar4 *d_input, unsigned char *out, int width
                 //const float w_r = expf(-dr2 * inv_2_sigma_r2);
                 float w = space_weight[(dx-x+radius)*dim_kernel+(dy-y+radius)] * color_weight[dr];
                 //const float w   = w_s * w_r;
-                if(idx0==DEBUG_IDX)
+                if(idx==DEBUG_IDX)
                     printf("gpu w_r: %f w_s:%f,val=%d\n", space_weight[(dx-x+radius)*dim_kernel+(dy-y+radius)],color_weight[dr],w);
 
                 wsum += w;
@@ -201,8 +201,8 @@ void bilateral_u8_gray_cpu(unsigned char *h_input, unsigned char *out, int width
                     float w_s = expf(-ds2 * inv_2_sigma_s2);
                     float w_r = expf(-dr2 * inv_2_sigma_r2);
                     float w   = w_s * w_r;
-                    if(idx0==DEBUG_IDX)
-                    printf("gpu w_r: %f w_s:%f,val=%d\n", w_s,w_r,w);
+                    if(idx==DEBUG_IDX)
+                        printf("cpu w_r: %f w_s:%f,val=%f\n", w_s,w_r,w);
                     wsum += w;
                     sum_r += w * val_r;
                     sum_g += w * val_g;
