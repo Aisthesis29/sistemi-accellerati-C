@@ -90,7 +90,7 @@ __global__ void bilateral_u8_gray(uchar4 *d_input, unsigned char *out, int width
                 float w = space_weight[(dx-x+radius)*dim_kernel+(dy-y+radius)] * color_weight[dr];
                 //const float w   = w_s * w_r;
                 if(idx==DEBUG_IDX)
-                    printf("idx: %d, gpu w_r: %f w_s:%f,val=%d\n", idx, space_weight[(dx-x+radius)*dim_kernel+(dy-y+radius)],color_weight[dr],w);
+                    printf("idx: %d, gpu w_r: %f w_s:%f,val=%f\n", idx, space_weight[(dx-x+radius)*dim_kernel+(dy-y+radius)],color_weight[dr],w);
 
                 wsum += w;
                 sum_r = fmaf(w, val_r, sum_r);  //sum_r += w * val_r;
