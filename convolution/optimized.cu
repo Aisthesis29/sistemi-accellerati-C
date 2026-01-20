@@ -46,15 +46,12 @@ static inline int max_cpu(int v1, int v2) {
     } \
 }
 
-__global__ void bilateral_u8_gray(uchar4 *d_input, unsigned char *out, int width, int height, int radius, float *space_weight,
-     //float *color_weight,
-     float sigma_r, 
-     int dim_kernel) {
+__global__ void bilateral_u8_gray(uchar4 *d_input, unsigned char *out, int width, int height, int radius, float *space_weight, float *color_weight, int dim_kernel) {
     int x = blockIdx.x * blockDim.x + threadIdx.x;
     int y = blockIdx.y * blockDim.y + threadIdx.y;
 
     int y0, yn, x0, xn;
-    const float inv_2_sigma_r2 = 1.0f / (2.0f * sigma_r * sigma_r);
+    //const float inv_2_sigma_r2 = 1.0f / (2.0f * sigma_r * sigma_r);
         
     if (x < width && y < height) {
         const int idx0 = y * width + x;
@@ -87,10 +84,10 @@ __global__ void bilateral_u8_gray(uchar4 *d_input, unsigned char *out, int width
                 int val_b = (int)val.z;
 
                 int dr  = abs(val_r - center_r)+abs(val_g - center_g)+abs(val_b - center_b);
-                int dr2 = dr * dr;
+                //int dr2 = dr * dr;
 
-                const float w_r = expf(-dr2 * inv_2_sigma_r2);
-                float w = space_weight[(dx-x+radius)*dim_kernel+(dy-y+radius)] * w_r;
+                //const float w_r = expf(-dr2 * inv_2_sigma_r2);
+                float w = space_weight[(dx-x+radius)*dim_kernel+(dy-y+radius)] * color_weight[dr];
                 //const float w   = w_s * w_r;
                 //if(idx0==DEBUG_IDX)
                     //printf("gpu w_r: %f w_s:%f,val=%d\n", w_r,w_s,val);
@@ -318,7 +315,7 @@ for( int i = 0; i < 256 * cn; i++ ){
 
     CHECK(cudaMalloc((void**)&d_color_weight, sizeof(float)*cn*256));
     CHECK(cudaMemcpy(d_color_weight, color_weight, sizeof(float)*cn*256, cudaMemcpyHostToDevice));
-    bilateral_u8_gray<<<grid, block>>>(d_input, d_output, width, height, radius, d_space_weight, sigma_r, dim_kernel);
+    bilateral_u8_gray<<<grid, block>>>(d_input, d_output, width, height, radius, d_space_weight, d_color_weight, dim_kernel);
 
     // ========== Salvataggio immagini ==========
     CHECK(cudaMemcpy(h_output, d_output, imageSize, cudaMemcpyDeviceToHost));
