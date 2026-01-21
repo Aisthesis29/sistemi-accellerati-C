@@ -46,7 +46,21 @@ static inline int max_cpu(int v1, int v2) {
     } \
 }
 
-__global__ void bilateral_u8_gray(uchar4 *d_input, unsigned char *out, int width, int height, int radius, float *space_weight, float *color_weight, int dim_kernel) {
+__global__ void memory_bella(unsigned char *h_input, uchar4* rgba, int width, int height) {
+    int x = blockIdx.x * blockDim.x + threadIdx.x;
+    int y = blockIdx.y * blockDim.y + threadIdx.y;
+
+    if (x < width && y < height) {
+        int idx = (y * width + x)*3;
+        
+        unsigned char r = h_input[idx];
+        unsigned char g = h_input[idx+1];
+        unsigned char b = h_input[idx+2];
+        rgba[idx] = make_uchar4(r, g, b, 0);
+    }
+}
+
+__global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, int height, int radius, float *space_weight, float *color_weight, int dim_kernel) {
     int x = blockIdx.x * blockDim.x + threadIdx.x;
     int y = blockIdx.y * blockDim.y + threadIdx.y;
 
@@ -56,7 +70,7 @@ __global__ void bilateral_u8_gray(uchar4 *d_input, unsigned char *out, int width
     if (x < width && y < height) {
         const int idx0 = y * width + x;
 
-        uchar4 pixel = d_input[idx0];
+        uchar4 pixel = rgba[idx0];
         int center_r = (int)pixel.x;
         int center_g = (int)pixel.y;
         int center_b = (int)pixel.z;
@@ -81,7 +95,7 @@ __global__ void bilateral_u8_gray(uchar4 *d_input, unsigned char *out, int width
                 //const int idx = yy * width + xx;
                 int idx = dy * width + dx;
 
-                uchar4 val = d_input[idx];
+                uchar4 val = rgba[idx];
                 int val_r = (int)val.x;
                 int val_g = (int)val.y;
                 int val_b = (int)val.z;
@@ -283,7 +297,7 @@ int main(int argc, char **argv) {
     // ========== Caricamento immagine ==========
     int width, height, channels;
     
-    unsigned char* h_input = stbi_load(inputFile, &width, &height, &channels, 4);
+    unsigned char* h_input = stbi_load(inputFile, &width, &height, &channels, 0);
     if (!h_input) {
         printf("Error loading image %s\n", inputFile);
         return 1;
@@ -296,16 +310,18 @@ int main(int argc, char **argv) {
     unsigned char* h_output = (unsigned char*)malloc(imageSize);
 
     // ========== Allocazione device ==========
-    uchar4 *d_input;
-    unsigned char *d_output;
-    CHECK(cudaMalloc((void**)&d_input, (width*height*4)));  //matchata al 4 della stbi_load in riga 269
+    uchar4 *rgba;
+    unsigned char *d_output, *d_input;
+    CHECK(cudaMalloc((void**)&d_input, imageSize));  //matchata al 4 della stbi_load in riga 269
+    CHECK(cudaMalloc((void**)&rgba, width*height*4));
     CHECK(cudaMalloc((void**)&d_output, imageSize));
 
-    CHECK(cudaMemcpy(d_input, h_input,  (width*height*4), cudaMemcpyHostToDevice)); //match anche qui
+    CHECK(cudaMemcpy(d_input, h_input,  imageSize, cudaMemcpyHostToDevice)); //match anche qui
 
     dim3 block(blockSize, blockSize);
     dim3 grid((width + block.x - 1) / block.x, (height + block.y - 1) / block.y);
     // ========== Operazione reali ==========
+    memory_bella<<<grid, block>>>(d_input, rgba, width, height);
     int ds2;
     float space_weight[dim_kernel][dim_kernel];
     const float inv_2_sigma_s2 = 1.0f / (2.0f * sigma_s * sigma_s);
@@ -333,7 +349,7 @@ int main(int argc, char **argv) {
 
     CHECK(cudaMalloc((void**)&d_color_weight, sizeof(float)*cn*256));
     CHECK(cudaMemcpy(d_color_weight, color_weight, sizeof(float)*cn*256, cudaMemcpyHostToDevice));
-    bilateral_u8_gray<<<grid, block>>>(d_input, d_output, width, height, radius, d_space_weight, d_color_weight, dim_kernel);
+    bilateral_u8_gray<<<grid, block>>>(rgba, d_output, width, height, radius, d_space_weight, d_color_weight, dim_kernel);
 
     // ========== Salvataggio immagini ==========
     CHECK(cudaMemcpy(h_output, d_output, imageSize, cudaMemcpyDeviceToHost));
