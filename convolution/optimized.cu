@@ -88,15 +88,13 @@ __global__ void bilateral_u8_gray(uchar4 *d_input, unsigned char *out, int width
 
                 int dr  = abs(val_r - center_r)+abs(val_g - center_g)+abs(val_b - center_b);
                 //int dr2 = dr * dr;
-                if(idx0==DEBUG_IDX) {
-                    printf("dx: %d, dy: %d, dr: %d\n", dx, dy, dr);
-                    printf("val_r: %d, val_g: %d, val_b: %d\n", center_r, center_g, center_b);
-                }
 
                 //const float w_r = expf(-dr2 * inv_2_sigma_r2);
                 float w = space_weight[(dx-x+radius)*dim_kernel+(dy-y+radius)] * color_weight[dr];
                 //const float w   = w_s * w_r;
-                if(idx==DEBUG_IDX) {
+                if(idx0==DEBUG_IDX) {
+                    printf("\ndx: %d, dy: %d, dr: %d\n", dx, dy, dr);
+                    printf("val_r: %d, val_g: %d, val_b: %d\n", val_r, val_g, val_b);
                     printf("dr: %d\n", dr);
                     printf("idx: %d, gpu w_r: %f w_s:%f,val=%f\n", idx, space_weight[(dx-x+radius)*dim_kernel+(dy-y+radius)],color_weight[dr],w);
                 }
@@ -217,6 +215,12 @@ void bilateral_u8_gray_cpu(unsigned char *h_input, unsigned char *out, int width
                     sum_r += w * val_r;
                     sum_g += w * val_g;
                     sum_b += w * val_b;
+
+                    if(idx0==DEBUG_IDX) {
+                        printf("\ndx: %d, dy: %d, dr: %d\n", dx, dy, dr);
+                        printf("val_r: %d, val_g: %d, val_b: %d\n", val_r, val_g, val_b);
+                        printf("idx: %d, cpu w_r: %f w_s:%f,val=%f\n", idx, w_r, w_s,w);
+                    }
                 }
             }
             float inv_Wsum = 1.f/wsum;
