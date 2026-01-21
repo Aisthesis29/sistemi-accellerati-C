@@ -319,10 +319,10 @@ int main(int argc, char **argv) {
     const float inv_2_sigma_r2 = 1.0f / (2.0f * sigma_r * sigma_r);
     const int cn=channels;
     float color_weight[cn*256];
-for( int i = 0; i < 256 * cn; i++ ){
-        color_weight[i] = expf(i * i * -inv_2_sigma_r2);
-        printf("dr: %d, %f\n", i, color_weight[i]);
-}
+    for( int i = 0; i < 256 * cn; i++ ){
+            color_weight[i] = expf(i * i * -inv_2_sigma_r2);
+            //printf("dr: %d, %f\n", i, color_weight[i]);
+    }
     float *d_color_weight;
 
     CHECK(cudaMalloc((void**)&d_color_weight, sizeof(float)*cn*256));
