@@ -75,9 +75,6 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
         int center_r = (int)pixel.x;
         int center_g = (int)pixel.y;
         int center_b = (int)pixel.z;
-        if(idx0==DEBUG_IDX) {
-            printf("idx0: %d, center_r: %d, center_g: %d, center_b: %d\n", idx0, center_r, center_g, center_b);
-        }
 
         float wsum = 0.0f;
         float sum_r = 0.0f;
@@ -107,13 +104,6 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
                 //const float w_r = expf(-dr2 * inv_2_sigma_r2);
                 float w = space_weight[(dx-x+radius)*dim_kernel+(dy-y+radius)] * color_weight[dr];
                 //const float w   = w_s * w_r;
-                if(idx0==DEBUG_IDX) {
-                    printf("\ndx: %d, dy: %d, dr: %d\n", dx, dy, dr);
-                    printf("val_r: %d, val_g: %d, val_b: %d\n", val_r, val_g, val_b);
-                    printf("dr: %d\n", dr);
-                    printf("idx: %d, gpu w_r: %f w_s:%f,val=%f\n", idx, space_weight[(dx-x+radius)*dim_kernel+(dy-y+radius)],color_weight[dr],w);
-                }
-                    
 
                 wsum += w;
                 sum_r = fmaf(w, val_r, sum_r);  //sum_r += w * val_r;
@@ -195,10 +185,6 @@ void bilateral_u8_gray_cpu(unsigned char *h_input, unsigned char *out, int width
             int center_r = (int)h_input[idx0*3];
             int center_g = (int)h_input[idx0*3+1];
             int center_b = (int)h_input[idx0*3+2];
-            
-            if(idx0==DEBUG_IDX) {
-                printf("idx0: %d, center_r: %d, center_g: %d, center_b: %d\n", idx0, center_r, center_g, center_b);
-            }
 
             float wsum = 0.0f;
             float sum_r = 0.0f;
@@ -232,12 +218,6 @@ void bilateral_u8_gray_cpu(unsigned char *h_input, unsigned char *out, int width
                     sum_r += w * val_r;
                     sum_g += w * val_g;
                     sum_b += w * val_b;
-
-                    if(idx0==DEBUG_IDX) {
-                        printf("\ndx: %d, dy: %d, dr: %d\n", dx, dy, dr);
-                        printf("val_r: %d, val_g: %d, val_b: %d\n", val_r, val_g, val_b);
-                        printf("idx: %d, cpu w_r: %f w_s:%f,val=%f\n", idx, w_r, w_s,w);
-                    }
                 }
             }
             float inv_Wsum = 1.f/wsum;
