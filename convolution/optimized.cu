@@ -213,8 +213,6 @@ void bilateral_u8_gray_cpu(unsigned char *h_input, unsigned char *out, int width
                     float w_s = expf(-ds2 * inv_2_sigma_s2);
                     float w_r = expf(-dr2 * inv_2_sigma_r2);
                     float w   = w_s * w_r;
-                    if(idx==DEBUG_IDX)
-                        printf("cpu w_r: %f w_s:%f,val=%f\n", w_s,w_r,w);
                     wsum += w;
                     sum_r += w * val_r;
                     sum_g += w * val_g;
@@ -343,7 +341,7 @@ int main(int argc, char **argv) {
     CHECK(cudaGetLastError());
     CHECK(cudaDeviceSynchronize());
     stbi_write_png("risultato.png", width, height, channels, h_output, width * channels);
-    printf("Finito bilateral gpu!!\n");
+    printf("\nFinito bilateral gpu!!\n\n");
 
     //Parte CPU + controllo
     unsigned char* h_output_cpu = (unsigned char*)malloc(imageSize);
