@@ -356,6 +356,7 @@ int main(int argc, char **argv) {
     free(h_output_cpu);
     CHECK(cudaFree(d_input));
     CHECK(cudaFree(d_output));
+    CHECK(cudaFree(rgba));
 
     printf("\n\n");
     return 0;
