@@ -56,7 +56,7 @@ __global__ void memory_bella(unsigned char *h_input, uchar4* rgba, int width, in
         unsigned char r = h_input[idx];
         unsigned char g = h_input[idx+1];
         unsigned char b = h_input[idx+2];
-        rgba[idx] = make_uchar4(r, g, b, 0);
+        rgba[idx] = make_uchar4(r, g, b, 255);
     }
 }
 
