@@ -61,7 +61,7 @@ __global__ void bilateral_u8_gray(uchar4 *d_input, unsigned char *out, int width
         int center_g = (int)pixel.y;
         int center_b = (int)pixel.z;
         if(idx0==DEBUG_IDX) {
-            printf("center_r: %d, center_g: %d, center_b: %d\n", center_r, center_g, center_b);
+            printf("idx0: %d, center_r: %d, center_g: %d, center_b: %d\n", idx0, center_r, center_g, center_b);
         }
 
         float wsum = 0.0f;
@@ -182,7 +182,7 @@ void bilateral_u8_gray_cpu(unsigned char *h_input, unsigned char *out, int width
             int center_b = (int)h_input[idx0*3+2];
             
             if(idx0==DEBUG_IDX) {
-                printf("center_r: %d, center_g: %d, center_b: %d\n", center_r, center_g, center_b);
+                printf("idx0: %d, center_r: %d, center_g: %d, center_b: %d\n", idx0, center_r, center_g, center_b);
             }
 
             float wsum = 0.0f;
