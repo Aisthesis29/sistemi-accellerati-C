@@ -11,7 +11,7 @@
 #include "stb_image.h"
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
-#define DEBUG_IDX 1991
+#define DEBUG_IDX 1992
 
 
 /*__device__ int clampi(int v, int lo, int hi) {
@@ -60,6 +60,9 @@ __global__ void bilateral_u8_gray(uchar4 *d_input, unsigned char *out, int width
         int center_r = (int)pixel.x;
         int center_g = (int)pixel.y;
         int center_b = (int)pixel.z;
+        if(idx0==DEBUG_IDX) {
+            printf("center_r: %d, center_g: %d, center_b: %d\n", center_r, center_g, center_b);
+        }
 
         float wsum = 0.0f;
         float sum_r = 0.0f;
@@ -85,6 +88,10 @@ __global__ void bilateral_u8_gray(uchar4 *d_input, unsigned char *out, int width
 
                 int dr  = abs(val_r - center_r)+abs(val_g - center_g)+abs(val_b - center_b);
                 //int dr2 = dr * dr;
+                if(idx0==DEBUG_IDX) {
+                    printf("dx: %d, dy: %d, dr: %d\n", dx, dy, dr);
+                    printf("val_r: %d, val_g: %d, val_b: %d\n", center_r, center_g, center_b);
+                }
 
                 //const float w_r = expf(-dr2 * inv_2_sigma_r2);
                 float w = space_weight[(dx-x+radius)*dim_kernel+(dy-y+radius)] * color_weight[dr];
