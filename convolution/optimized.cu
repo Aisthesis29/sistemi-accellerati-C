@@ -51,12 +51,13 @@ __global__ void memory_bella(unsigned char *h_input, uchar4* rgba, int width, in
     int y = blockIdx.y * blockDim.y + threadIdx.y;
 
     if (x < width && y < height) {
-        int idx = (y * width + x)*3;
+        int pixel = y * width + x; 
+        int idx = pixel *3;
         
         unsigned char r = h_input[idx];
         unsigned char g = h_input[idx+1];
         unsigned char b = h_input[idx+2];
-        rgba[idx] = make_uchar4(r, g, b, 255);
+        rgba[pixel] = make_uchar4(r, g, b, 255);
     }
 }
 
