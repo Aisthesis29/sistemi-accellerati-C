@@ -92,7 +92,7 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
         float w;
         for (int dy = y0; dy < y*(1-bordo); ++dy) {
             if(idx0==DEBUG_IDX){
-           print( "sono entrato");
+           printf( "sono entrato");
             }
 
             for (int dx = x0; dx <= xn; ++dx) {
