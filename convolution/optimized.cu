@@ -122,7 +122,7 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
                 sum_b = fmaf(w, val_bD, sum_b);  //sum_b += w * val_b;
                
             }
-              w=0;
+              wsum=0;
              i++;
         }
 
