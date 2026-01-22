@@ -11,7 +11,7 @@
 #include "stb_image.h"
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
-#define DEBUG_IDX 18155
+#define DEBUG_IDX 3840
 
 
 /*__device__ int clampi(int v, int lo, int hi) {
@@ -97,9 +97,19 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
                  //   printf("valore=%d",dim_kernel);
                // }
                 int idxDown = idxUpp+dim_kernel-2*i;
-                if(y==100&&x==200){
-                    printf("valore=%d",dim_kernel);
-                }
+               if(idx0==DEBUG_IDX){
+           printf("gPU idxUpp=%d\npeso = %.9f\nin   = R:%d G:%d B:%d\n"
+                  "in*peso   = R:%.9f G:%.9f B:%.9f\ntmp  = R:%d G:%d B:%d\n",
+                    idxUpp,
+                    peso,
+                    h_input[idx0*3],
+                    h_input[idx0*3 + 1],
+                    h_input[idx0*3 + 2],
+                    h_input[idx0*3]*peso,
+                    h_input[idx0*3 + 1]*peso,
+                    h_input[idx0*3 + 2]*peso,
+                    tmp1, tmp2, tmp3);
+        }
                 uchar4 valUpp = rgba[idxUpp];
                 int val_rU = (int)valUpp.x;
                 int val_gU = (int)valUpp.y;
