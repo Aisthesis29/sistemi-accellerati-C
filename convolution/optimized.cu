@@ -148,7 +148,7 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
             int val_b = (int)val.z;
 
             int dr  = abs(val_r - center_r)+abs(val_g - center_g)+abs(val_b - center_b);
-            float w = space_weight[(dx-x+radius)*dim_kernel+(radius)] * color_weight[dr];
+            float w = space_weight[(i-x+radius)*dim_kernel+(radius)] * color_weight[dr];
 
             wsum += w;
             sum_r = fmaf(w, val_r, sum_r);  //sum_r += w * val_r;
@@ -163,7 +163,7 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
             int val_b = (int)val.z;
 
             int dr  = abs(val_r - center_r)+abs(val_g - center_g)+abs(val_b - center_b);
-            float w = space_weight[(dx-x+radius)*dim_kernel+(radius)] * color_weight[dr];
+            float w = space_weight[(i-x+radius)*dim_kernel+(radius)] * color_weight[dr];
 
             wsum += w;
             sum_r = fmaf(w, val_r, sum_r);  //sum_r += w * val_r;
