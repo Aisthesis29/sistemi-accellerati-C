@@ -128,9 +128,10 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
             //sum_g=0;
             //sum_b=0;
              if(idx0==DEBUG_IDX){
-           printf( "SUM_R_G_B=%f %f %f",sum_r,sum_g,sum_b);
-                      printf( "val rgU etc U=%d %d %d",val_rU,val_gU,val_bU);
-                      printf( "val rgD etc D=%d %d %d",val_rD,val_gD,val_bD);
+           printf( "SUM_R_G_B=%f %f %f",sum_r,sum_g,sum_b); //valori NON ok
+           printf("\nw?=%f",w);
+                      //printf( "val rgU etc U=%d %d %d",val_rU,val_gU,val_bU); valori ok
+                      //printf( "val rgD etc D=%d %d %d",val_rD,val_gD,val_bD);valori ok
 
             }
             }
