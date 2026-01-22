@@ -116,9 +116,9 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
                 int dr  = abs(val_rU - center_r)+abs(val_gU - center_g)+abs(val_bU - center_b);
                 w = w_s * color_weight[dr];
                 wsum += w;
-                sum_r = fmaf(w, val_rD, sum_r);  //sum_r += w * val_r;
-                sum_g = fmaf(w, val_gD, sum_g);  //sum_g += w * val_g;
-                sum_b = fmaf(w, val_bD, sum_b);  //sum_b += w * val_b;
+                sum_r = fmaf(w, val_rU, sum_r);  //sum_r += w * val_r;
+                sum_g = fmaf(w, val_gU, sum_g);  //sum_g += w * val_g;
+                sum_b = fmaf(w, val_bU, sum_b);  //sum_b += w * val_b;
                 int drD  = abs(val_rD - center_r)+abs(val_gD - center_g)+abs(val_bD - center_b);
                 w = w_s * color_weight[drD];
                 wsum += w;
