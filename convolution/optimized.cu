@@ -105,7 +105,7 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
              if(idx0==DEBUG_IDX){
            //printf( "sono entrato");
                 printf("down1=%d down=%d",idxDown1,idxDown);
-        }
+                     }
                 uchar4 valUpp = rgba[idxUpp];
                 int val_rU = (int)valUpp.x;
                 int val_gU = (int)valUpp.y;
@@ -141,9 +141,9 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
                       //printf( "val rgD etc D=%d %d %d",val_rD,val_gD,val_bD);valori ok
 
                 }
-               
+               i++;
             }
-             i++;
+             
               //wsum=0;
              
         }
