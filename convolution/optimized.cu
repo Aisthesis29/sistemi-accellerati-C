@@ -93,11 +93,13 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
         for (int dy = y0; dy < y*(1-bordo); ++dy) {
             for (int dx = x0; dx <= xn; ++dx) {
                 int idxUpp = dy*width+dx;
-                if(y==10){
+               // if(y==10){
+                 //   printf("valore=%d",dim_kernel);
+               // }
+                int idxDown = idxUpp+dim_kernel-2*i;
+                if(y==10&&x==2){
                     printf("valore=%d",dim_kernel);
                 }
-                int idxDown = (dy+dim_kernel-2*i)*width+dx;
-                
                 uchar4 valUpp = rgba[idxUpp];
                 int val_rU = (int)valUpp.x;
                 int val_gU = (int)valUpp.y;
