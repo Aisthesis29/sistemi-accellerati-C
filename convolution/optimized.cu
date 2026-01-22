@@ -102,10 +102,10 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
                 int idxDown1 = (dy+dim_kernel-1-2*(i))*width+dx;
              int dy_mirror = 2*y - dy; // se dy<y, allora dy_mirror>y 
              int idxDown = dy_mirror * width + dx;
-             if(idx0==DEBUG_IDX){
+            // if(idx0==DEBUG_IDX){
            //printf( "sono entrato");
-                printf("down1=%d down=%d\n",idxDown1,idxDown);
-                     }
+             //   printf("down1=%d down=%d\n",idxDown1,idxDown);
+                //     }
                 uchar4 valUpp = rgba[idxUpp];
                 int val_rU = (int)valUpp.x;
                 int val_gU = (int)valUpp.y;
@@ -132,6 +132,7 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
               // sum_r=0;
             //sum_g=0;
             //sum_b=0;
+            /*
              if(idx0==DEBUG_IDX){
            printf( "SUM_R_G_B=%f %f %f",sum_r,sum_g,sum_b); //valori NON ok
            printf("\nw?=%f",w);
@@ -140,7 +141,7 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
                       //printf( "val rgU etc U=%d %d %d",val_rU,val_gU,val_bU); valori ok
                       //printf( "val rgD etc D=%d %d %d",val_rD,val_gD,val_bD);valori ok
 
-                }
+                }*/
                
             }
              i++;
@@ -169,9 +170,9 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
             for (int dx = x0; dx <= xn; ++dx) {
                 int idx = dy * width + dx;
 
-                if(y==10&&x==2){
+             /*   if(y==10&&x==2){
                     printf("    CIAO DA BORDO=%d",dim_kernel);
-                }
+                }*/
                 uchar4 val = rgba[idx];
                 int val_r = (int)val.x;
                 int val_g = (int)val.y;
@@ -193,7 +194,7 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
       
        
        
-        if(idx0==DEBUG_IDX){
+       /* if(idx0==DEBUG_IDX){
            printf("gPU idx=%d\nin   = R:%d G:%d B:%d\n"
                   "\ntmp  = R:%d G:%d B:%d\n",
                     idx0,
@@ -204,7 +205,7 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
                     out[idx0*3],
                     out[idx0*3+1],
                     out[idx0*3+2]);
-        }
+        }*/
     }
 }
 
