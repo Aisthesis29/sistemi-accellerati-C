@@ -97,19 +97,7 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
                  //   printf("valore=%d",dim_kernel);
                // }
                 int idxDown = idxUpp+dim_kernel-2*i;
-               if(idx0==DEBUG_IDX){
-           printf("gPU idxUpp=%d\npeso = %.9f\nin   = R:%d G:%d B:%d\n"
-                  "in*peso   = R:%.9f G:%.9f B:%.9f\ntmp  = R:%d G:%d B:%d\n",
-                    idxUpp,
-                    peso,
-                    h_input[idx0*3],
-                    h_input[idx0*3 + 1],
-                    h_input[idx0*3 + 2],
-                    h_input[idx0*3]*peso,
-                    h_input[idx0*3 + 1]*peso,
-                    h_input[idx0*3 + 2]*peso,
-                    tmp1, tmp2, tmp3);
-        }
+              
                 uchar4 valUpp = rgba[idxUpp];
                 int val_rU = (int)valUpp.x;
                 int val_gU = (int)valUpp.y;
@@ -178,7 +166,7 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
         out[idx0*3] = (unsigned char)(sum_r*inv_Wsum+0.5f);
         out[idx0*3+1] = (unsigned char)(sum_g*inv_Wsum+0.5f);
         out[idx0*3+2] = (unsigned char)(sum_b*inv_Wsum+0.5f);
-       
+        w=0;
        
        
         /*if(idx0==DEBUG_IDX){
