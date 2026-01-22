@@ -97,11 +97,9 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
 
             for (int dx = x0; dx <= xn; ++dx) {
                 int idxUpp = dy*width+dx;
-               // if(y==10){
-                 //   printf("valore=%d",dim_kernel);
-               // }
-              
-                int idxDown = (dy+dim_kernel-2*i)*width+dx;
+              int dy_mirror = 2*y - dy;   // se dy<y, allora dy_mirror>y
+int idxDown   = dy_mirror * width + dx;
+
               
                 uchar4 valUpp = rgba[idxUpp];
                 int val_rU = (int)valUpp.x;
@@ -138,9 +136,9 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
                       //printf( "val rgD etc D=%d %d %d",val_rD,val_gD,val_bD);valori ok
 
                 }
-               i++; 
+               
             }
-            
+             i++;
               //wsum=0;
              
         }
