@@ -175,16 +175,15 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
        
         if(idx0==DEBUG_IDX){
            printf("gPU idx=%d\nin   = R:%d G:%d B:%d\n"
-                  "in*peso   = R:%.9f G:%.9f B:%.9f\ntmp  = R:%d G:%d B:%d\n",
+                  "\ntmp  = R:%d G:%d B:%d\n",
                     idx0,
                     
-                    h_input[idx0*3],
-                    h_input[idx0*3 + 1],
-                    h_input[idx0*3 + 2],
+                    rgba[idx0].x,
+                    rgba[idx0].y,
+                    rgba[idx0].z,
                     out[idx0*3],
                     out[idx0*3+1],
-                    out[idx0*3+2],
-                    tmp1, tmp2, tmp3);
+                    out[idx0*3+2]);
         }
     }
 }
