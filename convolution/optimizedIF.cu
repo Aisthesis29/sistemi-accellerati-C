@@ -90,8 +90,8 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
             bordo = 1;
         }
         float w,w_s;
-        if(bordo==1){
- for (int dy = y0; dy < y*(1-bordo); ++dy) {
+        if(bordo==0){
+ for (int dy = y0; dy < y; ++dy) {
             
 
             for (int dx = x0; dx <= xn; ++dx) {
@@ -150,7 +150,7 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
              
         }
 
-        for(int dx=x0; dx<=xn*(1-bordo); dx++) {
+        for(int dx=x0; dx<=xn; dx++) {
             int idx = y * width + dx;
             uchar4 val = rgba[idx];
             int val_r = (int)val.x;
@@ -168,7 +168,7 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
         }
         }
         else{
- for (int dy = y0; dy <= yn*bordo; ++dy) {
+ for (int dy = y0; dy <= yn; ++dy) {
             for (int dx = x0; dx <= xn; ++dx) {
                 int idx = dy * width + dx;
 
