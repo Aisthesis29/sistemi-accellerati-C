@@ -91,16 +91,21 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
         }
         float w,w_s;
         for (int dy = y0; dy < y*(1-bordo); ++dy) {
-            if(idx0==DEBUG_IDX){
-           printf( "sono entrato");
-            }
+            
 
             for (int dx = x0; dx <= xn; ++dx) {
                 int idxUpp = dy*width+dx;
-              int dy_mirror = 2*y - dy;   // se dy<y, allora dy_mirror>y
-int idxDown   = dy_mirror * width + dx;
-
+               // if(y==10){
+                 //   printf("valore=%d",dim_kernel);
+               // }
               
+                int idxDown1 = (dy+dim_kernel-2*i)*width+dx;
+             int dy_mirror = 2*y - dy; // se dy<y, allora dy_mirror>y 
+             int idxDown = dy_mirror * width + dx;
+             if(idx0==DEBUG_IDX){
+           //printf( "sono entrato");
+                printf("down1=%d down=%d",idxDown1,idxDown);
+        }
                 uchar4 valUpp = rgba[idxUpp];
                 int val_rU = (int)valUpp.x;
                 int val_gU = (int)valUpp.y;
