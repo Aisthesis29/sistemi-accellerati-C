@@ -97,7 +97,9 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
                  //   printf("valore=%d",dim_kernel);
                // }
                 int idxDown = idxUpp+dim_kernel-2*i;
-                
+                if(y==10&&x==2){
+                    printf("valore=%d",dim_kernel);
+                }
                 uchar4 valUpp = rgba[idxUpp];
                 int val_rU = (int)valUpp.x;
                 int val_gU = (int)valUpp.y;
@@ -145,9 +147,9 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
             for (int dx = x0; dx <= xn; ++dx) {
                 int idx = dy * width + dx;
 
-                if(y==10&&x==2){
-                    printf("valore=%d",dim_kernel);
-                }
+                //if(y==10&&x==2){
+                  //  printf("valore=%d",dim_kernel);
+               // }
                 uchar4 val = rgba[idx];
                 int val_r = (int)val.x;
                 int val_g = (int)val.y;
