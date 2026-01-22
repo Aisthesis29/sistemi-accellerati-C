@@ -11,7 +11,7 @@
 #include "stb_image.h"
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
-#define DEBUG_IDX 3840
+#define DEBUG_IDX 7680
 
 
 /*__device__ int clampi(int v, int lo, int hi) {
