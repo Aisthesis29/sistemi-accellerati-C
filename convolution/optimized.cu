@@ -117,8 +117,9 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
                 sum_r = fmaf(w, val_rD, sum_r);  //sum_r += w * val_r;
                 sum_g = fmaf(w, val_gD, sum_g);  //sum_g += w * val_g;
                 sum_b = fmaf(w, val_bD, sum_b);  //sum_b += w * val_b;
-                i++;
+               
             }
+             i++;
         }
 
         for(int dx=x0; dx<=xn*(1-bordo); dx++) {
