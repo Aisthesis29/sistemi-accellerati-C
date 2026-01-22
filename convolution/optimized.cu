@@ -85,11 +85,11 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
         yn = min(y+radius, height-1);
         x0 = max(x-radius, 0);
         xn = min(x+radius, width-1);
-        int i=0, w_s, bordo = 0;
+        int i=0, bordo = 0;
         if(y<=radius || (y+radius)>=height) {
             bordo = 1;
         }
-        float w;
+        float w,w_s;
         for (int dy = y0; dy < y*(1-bordo); ++dy) {
             if(idx0==DEBUG_IDX){
            printf( "sono entrato");
