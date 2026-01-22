@@ -97,7 +97,7 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
                  //   printf("valore=%d",dim_kernel);
                // }
                 int idxDown = idxUpp+dim_kernel-2*i;
-                if(y==10&&x==2){
+                if(y==100&&x==200){
                     printf("valore=%d",dim_kernel);
                 }
                 uchar4 valUpp = rgba[idxUpp];
