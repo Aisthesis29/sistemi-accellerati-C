@@ -135,10 +135,11 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
                       //printf( "val rgU etc U=%d %d %d",val_rU,val_gU,val_bU); valori ok
                       //printf( "val rgD etc D=%d %d %d",val_rD,val_gD,val_bD);valori ok
 
-            }
+                }
+                i++;
             }
               //wsum=0;
-             i++;
+             
         }
 
         for(int dx=x0; dx<=xn*(1-bordo); dx++) {
