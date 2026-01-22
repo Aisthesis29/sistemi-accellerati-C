@@ -86,11 +86,13 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
         x0 = max(x-radius, 0);
         xn = min(x+radius, width-1);
         int i=0, bordo = 0;
+        
         if(y<=radius || (y+radius)>=height) {
             bordo = 1;
         }
+        const int condition1_bordo=y*(1-bordo);
         float w,w_s;
-        for (int dy = y0; dy < y*(1-bordo); ++dy) {
+        for (int dy = y0; dy < condition1_bordo; ++dy) {
             
 
             for (int dx = x0; dx <= xn; ++dx) {
@@ -148,8 +150,8 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
               //wsum=0;
              
         }
-
-        for(int dx=x0; dx<=xn*(1-bordo); dx++) {
+        const int condition2_bordo=xn*(1-bordo);
+        for(int dx=x0; dx<=condition2_bordo; dx++) {
             int idx = y * width + dx;
             uchar4 val = rgba[idx];
             int val_r = (int)val.x;
@@ -165,8 +167,9 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
             sum_b = fmaf(w, val_b, sum_b);  //sum_b += w * val_b;
             
         }
+        const int cond_bordo=yn*bordo; 
 
-        for (int dy = y0; dy <= yn*bordo; ++dy) {
+        for (int dy = y0; dy <= cond_bordo; ++dy) {
             for (int dx = x0; dx <= xn; ++dx) {
                 int idx = dy * width + dx;
 
