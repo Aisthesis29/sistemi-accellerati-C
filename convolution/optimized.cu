@@ -138,8 +138,9 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
                       //printf( "val rgD etc D=%d %d %d",val_rD,val_gD,val_bD);valori ok
 
                 }
-                i++;
+                
             }
+            i++;
               //wsum=0;
              
         }
@@ -217,7 +218,7 @@ bool verifyResults(unsigned char* cpu_result, unsigned char* gpu_result, int siz
             if(diff>=2){
                 grave_errors++;
             }
-            if (errors < 60) {
+            if (errors < 4) {
                 printf("Mismatch at index %d: CPU=%d, %s=%d (diff=%d)\n", 
                         i, cpu_result[i], label, gpu_result[i], diff);
             }
