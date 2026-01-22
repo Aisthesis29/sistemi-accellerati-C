@@ -90,7 +90,7 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
             bordo = 1;
         }
         float w;
-       /* for (int dy = y0; dy < y*(1-bordo); ++dy) {
+        for (int dy = y0; dy < y*(1-bordo); ++dy) {
             for (int dx = x0; dx <= xn; ++dx) {
                 int idxUpp = dy*width+dx;
                // if(y==10){
@@ -126,7 +126,7 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
             }
               //wsum=0;
              i++;
-        }*/
+        }
 
         for(int dx=x0; dx<=xn*(1-bordo); dx++) {
             int idx = y * width + dx;
