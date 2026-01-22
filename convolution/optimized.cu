@@ -122,7 +122,7 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
              i++;
         }
 
-        for(int dx=x0; dx<=xn*(1-bordo); dx++) {
+        for(int dx=x0; dx<=xn*(bordo); dx++) {
             int idx = y * width + dx;
             uchar4 val = rgba[idx];
             int val_r = (int)val.x;
