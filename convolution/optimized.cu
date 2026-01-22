@@ -11,7 +11,7 @@
 #include "stb_image.h"
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
-#define DEBUG_IDX 1992
+#define DEBUG_IDX 18155
 
 
 /*__device__ int clampi(int v, int lo, int hi) {
@@ -76,7 +76,7 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
         int center_g = (int)pixel.y;
         int center_b = (int)pixel.z;
 
-        float wsum = 1.f;
+        float wsum = 0.0f;
         float sum_r = 0.0f;
         float sum_g = 0.0f;
         float sum_b = 0.0f;
@@ -121,7 +121,7 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
             }
         }
 
-        for(int dx=x0; dx<xn*(1-bordo); dx++) {
+        for(int dx=x0; dx<=xn*(1-bordo); dx++) {
             int idx = y * width + dx;
             uchar4 val = rgba[idx];
             int val_r = (int)val.x;
