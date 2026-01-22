@@ -90,7 +90,7 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
             bordo = 1;
         }
         float w;
-        for (int dy = y0; dy < y*(1-bordo); dy++) {
+        for (int dy = y0; dy < y*(1-bordo); ++dy) {
             for (int dx = x0; dx <= xn; ++dx) {
                 int idxUpp = dy*width+dx;
                 int idxDown = (dy+dim_kernel-2*i)*width+dx;
@@ -112,7 +112,7 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
                 sum_g = fmaf(w, val_gU, sum_g);  //sum_g += w * val_g;
                 sum_b = fmaf(w, val_bU, sum_b);  //sum_b += w * val_b;
                 int drD  = abs(val_rD - center_r)+abs(val_gD - center_g)+abs(val_bD - center_b);
-                w = w_s * color_weight[dr];
+                w = w_s * color_weight[drD];
                 wsum += w;
                 sum_r = fmaf(w, val_rD, sum_r);  //sum_r += w * val_r;
                 sum_g = fmaf(w, val_gD, sum_g);  //sum_g += w * val_g;
