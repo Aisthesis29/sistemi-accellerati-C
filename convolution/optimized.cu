@@ -86,7 +86,7 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
         x0 = max(x-radius, 0);
         xn = min(x+radius, width-1);
         int i=0, w_s, bordo = 0;
-        if(y<radius || (y+radius)>=height) {
+        if(y<=radius || (y+radius)>=height) {
             bordo = 1;
         }
         float w;
