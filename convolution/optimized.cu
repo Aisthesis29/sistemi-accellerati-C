@@ -140,15 +140,18 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
             sum_r = fmaf(w, val_r, sum_r);  //sum_r += w * val_r;
             sum_g = fmaf(w, val_g, sum_g);  //sum_g += w * val_g;
             sum_b = fmaf(w, val_b, sum_b);  //sum_b += w * val_b;
+            sum_r=0;
+            sum_g=0;
+            sum_b=0;
         }
 
         for (int dy = y0; dy <= yn*bordo; ++dy) {
             for (int dx = x0; dx <= xn; ++dx) {
                 int idx = dy * width + dx;
 
-                //if(y==10&&x==2){
-                  //  printf("valore=%d",dim_kernel);
-               // }
+                if(y==10&&x==2){
+                    printf("    CIAO DA BORDO=%d",dim_kernel);
+                }
                 uchar4 val = rgba[idx];
                 int val_r = (int)val.x;
                 int val_g = (int)val.y;
