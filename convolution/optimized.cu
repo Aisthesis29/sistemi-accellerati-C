@@ -122,6 +122,7 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
                 sum_b = fmaf(w, val_bD, sum_b);  //sum_b += w * val_b;
                
             }
+              w=0;
              i++;
         }
 
@@ -166,7 +167,7 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
         out[idx0*3] = (unsigned char)(sum_r*inv_Wsum+0.5f);
         out[idx0*3+1] = (unsigned char)(sum_g*inv_Wsum+0.5f);
         out[idx0*3+2] = (unsigned char)(sum_b*inv_Wsum+0.5f);
-        w=0;
+      
        
        
         /*if(idx0==DEBUG_IDX){
