@@ -99,7 +99,7 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
                  //   printf("valore=%d",dim_kernel);
                // }
               
-                int idxDown1 = 3*(dy+dim_kernel-2*(i))*width+dx;
+                int idxDown1 = (dy+dim_kernel-2*(i))*width+dx;
              int dy_mirror = 2*y - dy; // se dy<y, allora dy_mirror>y 
              int idxDown = dy_mirror * width + dx;
              if(idx0==DEBUG_IDX){
