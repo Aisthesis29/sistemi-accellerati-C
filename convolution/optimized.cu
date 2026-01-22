@@ -120,7 +120,9 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
                 sum_r = fmaf(w, val_rD, sum_r);  //sum_r += w * val_r;
                 sum_g = fmaf(w, val_gD, sum_g);  //sum_g += w * val_g;
                 sum_b = fmaf(w, val_bD, sum_b);  //sum_b += w * val_b;
-               
+               sum_r=0;
+            sum_g=0;
+            sum_b=0;
             }
               wsum=0;
              i++;
@@ -140,9 +142,7 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
             sum_r = fmaf(w, val_r, sum_r);  //sum_r += w * val_r;
             sum_g = fmaf(w, val_g, sum_g);  //sum_g += w * val_g;
             sum_b = fmaf(w, val_b, sum_b);  //sum_b += w * val_b;
-            sum_r=0;
-            sum_g=0;
-            sum_b=0;
+            
         }
 
         for (int dy = y0; dy <= yn*bordo; ++dy) {
