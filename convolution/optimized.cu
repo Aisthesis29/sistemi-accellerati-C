@@ -76,21 +76,52 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
         int center_g = (int)pixel.y;
         int center_b = (int)pixel.z;
 
-        float wsum = 0.0f;
-        float sum_r = 0.0f;
-        float sum_g = 0.0f;
-        float sum_b = 0.0f;
+        float wsum = 1.f;
+        float sum_r = center_r;
+        float sum_g = center_g;
+        float sum_b = center_b;
 
         y0 = max(y-radius, 0);
         yn = min(y+radius, height-1);
         x0 = max(x-radius, 0);
         xn = min(x+radius, width-1);
-        for (int dy = y0; dy <= yn; ++dy) {
-            //const int yy = clampi(y + dy, 0, height - 1);
-
+        int i=0, w_s, bordo = 0;
+        if(y<radius || (y+radius)>height) {
+            bordo = 1;
+        }
+        for (int dy = y0; dy < y*(1-bordo); ++dy) {
             for (int dx = x0; dx <= xn; ++dx) {
-                //const int xx = clampi(x + dx, 0, width - 1);
-                //const int idx = yy * width + xx;
+                int idxUpp = dy*width+dx;
+                int idxDown = (dy+dim_kernel-2*i)*width+dx;
+                
+                uchar4 valUpp = rgba[idxUpp];
+                int val_rU = (int)valUpp.x;
+                int val_gU = (int)valUpp.y;
+                int val_bU = (int)valUpp.z;
+                uchar4 valDown = rgba[idxDown];
+                int val_rD = (int)valDown.x;
+                int val_gD = (int)valDown.y;
+                int val_bD = (int)valDown.z;
+
+                w_s = space_weight[(dx-x+radius)*dim_kernel+(dy-y+radius)];
+                int dr  = abs(val_rU - center_r)+abs(val_gU - center_g)+abs(val_bU - center_b);
+                float w = w_s * color_weight[dr];
+                wsum += w;
+                sum_r = fmaf(w, val_rU, sum_r);  //sum_r += w * val_r;
+                sum_g = fmaf(w, val_gU, sum_g);  //sum_g += w * val_g;
+                sum_b = fmaf(w, val_bU, sum_b);  //sum_b += w * val_b;
+                int drD  = abs(val_rD - center_r)+abs(val_gD - center_g)+abs(val_bD - center_b);
+                float w = w_s * color_weight[dr];
+                wsum += w;
+                sum_r = fmaf(w, val_rD, sum_r);  //sum_r += w * val_r;
+                sum_g = fmaf(w, val_gD, sum_g);  //sum_g += w * val_g;
+                sum_b = fmaf(w, val_bD, sum_b);  //sum_b += w * val_b;
+                i++;
+            }
+        }
+
+        for (int dy = y0; dy < y*bordo; ++dy) {
+            for (int dx = x0; dx <= xn; ++dx) {
                 int idx = dy * width + dx;
 
                 uchar4 val = rgba[idx];
@@ -99,19 +130,62 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
                 int val_b = (int)val.z;
 
                 int dr  = abs(val_r - center_r)+abs(val_g - center_g)+abs(val_b - center_b);
-                //int dr2 = dr * dr;
-
-                //const float w_r = expf(-dr2 * inv_2_sigma_r2);
                 float w = space_weight[(dx-x+radius)*dim_kernel+(dy-y+radius)] * color_weight[dr];
-                //const float w   = w_s * w_r;
 
                 wsum += w;
                 sum_r = fmaf(w, val_r, sum_r);  //sum_r += w * val_r;
                 sum_g = fmaf(w, val_g, sum_g);  //sum_g += w * val_g;
                 sum_b = fmaf(w, val_b, sum_b);  //sum_b += w * val_b;
+            }
+        }
 
-                //if(idx0==DEBUG_IDX)
-                    //printf("GPU VAL=%d",val);
+        for(int i=x0; i<x; i++) {
+            int idx = y * width + i;
+            uchar4 val = rgba[idx];
+            int val_r = (int)val.x;
+            int val_g = (int)val.y;
+            int val_b = (int)val.z;
+
+            int dr  = abs(val_r - center_r)+abs(val_g - center_g)+abs(val_b - center_b);
+            float w = space_weight[(dx-x+radius)*dim_kernel+(dy-y+radius)] * color_weight[dr];
+
+            wsum += w;
+            sum_r = fmaf(w, val_r, sum_r);  //sum_r += w * val_r;
+            sum_g = fmaf(w, val_g, sum_g);  //sum_g += w * val_g;
+            sum_b = fmaf(w, val_b, sum_b);  //sum_b += w * val_b;
+        }
+        for(int i=x+1; i<xn; i++) {
+            int idx = y * width + i;
+            uchar4 val = rgba[idx];
+            int val_r = (int)val.x;
+            int val_g = (int)val.y;
+            int val_b = (int)val.z;
+
+            int dr  = abs(val_r - center_r)+abs(val_g - center_g)+abs(val_b - center_b);
+            float w = space_weight[(dx-x+radius)*dim_kernel+(dy-y+radius)] * color_weight[dr];
+
+            wsum += w;
+            sum_r = fmaf(w, val_r, sum_r);  //sum_r += w * val_r;
+            sum_g = fmaf(w, val_g, sum_g);  //sum_g += w * val_g;
+            sum_b = fmaf(w, val_b, sum_b);  //sum_b += w * val_b;
+        }
+
+        for (int dy = y+1; dy < yn*bordo; ++dy) {
+            for (int dx = x0; dx <= xn; ++dx) {
+                int idx = dy * width + dx;
+
+                uchar4 val = rgba[idx];
+                int val_r = (int)val.x;
+                int val_g = (int)val.y;
+                int val_b = (int)val.z;
+
+                int dr  = abs(val_r - center_r)+abs(val_g - center_g)+abs(val_b - center_b);
+                float w = space_weight[(dx-x+radius)*dim_kernel+(dy-y+radius)] * color_weight[dr];
+
+                wsum += w;
+                sum_r = fmaf(w, val_r, sum_r);  //sum_r += w * val_r;
+                sum_g = fmaf(w, val_g, sum_g);  //sum_g += w * val_g;
+                sum_b = fmaf(w, val_b, sum_b);  //sum_b += w * val_b;
             }
         }
         float inv_Wsum = 1.f/wsum;
