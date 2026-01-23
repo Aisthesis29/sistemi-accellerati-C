@@ -395,6 +395,7 @@ int main(int argc, char **argv) {
     
     // ========== Salvataggio immagini ==========
 
+    
     CHECK(cudaMemcpy(h_output, d_output, imageSize, cudaMemcpyDeviceToHost));
     //CHECK(cudaMemcpy(d_output, h_output, imageSize, cudaMemcpyDeviceToHost));
     CHECK(cudaGetLastError());
