@@ -391,7 +391,7 @@ int main(int argc, char **argv) {
     
     bilateral_u8_gray<<<grid, block>>>(rgba_border1, d_output, width, width*dim_kernel, radius, d_space_weight, d_color_weight, dim_kernel);
 
-    bilateral_u8_gray<<<grid, block>>>(rgba_inner_end, d_output, width, width*dim_kernel, radius, d_space_weight, d_color_weight, dim_kernel);
+    bilateral_u8_gray<<<grid, block>>>(rgba_inner_end, d_output, width, width*dim_kernel-1, radius, d_space_weight, d_color_weight, dim_kernel);
     
     // ========== Salvataggio immagini ==========
 
