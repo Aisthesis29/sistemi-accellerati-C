@@ -483,7 +483,7 @@ unsigned char *out_inner=d_output+3*(width);
 bilateral_u8_gray<<<grid, block>>>(first_row_end, out_inner, width, height-2, radius, d_space_weight, d_color_weight, dim_kernel);
 
 //first row
-bilateral_u8_gray_unopt<<<grid, block>>>(rgba, out_first, width, 1, radius, d_space_weight, d_color_weight, dim_kernel);
+//bilateral_u8_gray_unopt<<<grid, block>>>(rgba, out_first, width, 1, radius, d_space_weight, d_color_weight, dim_kernel);
 //last row
 bilateral_u8_gray_unopt<<<grid, block>>>(last_row_start, out_last, width, 1, radius, d_space_weight, d_color_weight, dim_kernel);
     // ========== Salvataggio immagini ==========
