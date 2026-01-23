@@ -98,7 +98,8 @@ __global__ void bilateral_u8_gray_unopt_ybase(
 
     int y0, yn, x0, xn;
     //const float inv_2_sigma_r2 = 1.0f / (2.0f * sigma_r * sigma_r);
-        
+        if (x >= width || y_local >= rows) return;
+
     if (x < width && y_local < height) {
             int y = y_base + y_local;               // y globale
 
@@ -119,9 +120,6 @@ __global__ void bilateral_u8_gray_unopt_ybase(
         x0 = max(x-radius, 0);
         xn = min(x+radius, width-1);
         int i=0, bordo = 0;
-        if(y<=radius || (y+radius)>=height) {
-            bordo = 1;
-        }
         float w,w_s;
     
  for (int dy = y0; dy <= yn; ++dy) {
