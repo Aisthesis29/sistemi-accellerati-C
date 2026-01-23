@@ -1,0 +1,13 @@
+memory_bella:
+-scoreboard dependancy su L1 op.
+
+bilateral kernel:
+This kernel has uncoalesced global accesses resulting in a total of 157896342 excessive sectors (31% of the total 509752674 sectors). Check the L2 Theoretical Sectors Global Excessive table for the primary source locations. The  CUDA Programming Guide has additional information on reducing uncoalesced device memory accesses.
+
+problema con la memoria coalescente
+
+ROOFLINE FLOPS <<<<<<<<<<<<<<<<
+
+l'estimated speedup segna i valori migliorabili: per k piccoli, il valore migliore da ott. sarebbero i load da l1 o gli accessi uncoalesced, per k grandi solo i load dalla l1.
+
+per entrambi, il collo di bottiglia sta nella scrittura dell'immagine
