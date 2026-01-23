@@ -502,7 +502,9 @@ bilateral_u8_gray_unopt_ybase<<<grid_row, block>>>(
     d_space_weight, d_color_weight,
     dim_kernel
 );
-bilateral_u8_gray_unopt_ybase<<<grid_row, block>>>(
+dim3 grid_row_ALT((width + block.x - 1) / block.x,
+              (rows-1  + block.y - 1) / block.y);
+bilateral_u8_gray_unopt_ybase<<<grid_row_ALT, block>>>(
     rgba, out_first,                 // base pointers (immagine intera)
     width, height,                  // DIMENSIONI REALI
     1, rows-1,                           // y_base=0, rows=1  -> solo prima riga
