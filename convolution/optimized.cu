@@ -73,7 +73,7 @@ bool verifyResults(unsigned char* cpu_result, unsigned char* gpu_result, int siz
             if(diff>=2){
                 grave_errors++;
             }
-            if (errors < 700&&errors>400) {
+            if (errors < 13&&errors>0) {
                 printf("Mismatch at index %d: CPU=%d, %s=%d (diff=%d)\n", 
                         i, cpu_result[i], label, gpu_result[i], diff);
             }
@@ -87,14 +87,21 @@ bool verifyResults(unsigned char* cpu_result, unsigned char* gpu_result, int siz
     
     return grave_errors == 0;
 }
-__global__ void bilateral_u8_gray_unopt(uchar4 *rgba, unsigned char *out, int width, int height, int radius, float *space_weight, float *color_weight, int dim_kernel) {
-    int x = blockIdx.x * blockDim.x + threadIdx.x;
-    int y = blockIdx.y * blockDim.y + threadIdx.y;
+__global__ void bilateral_u8_gray_unopt_ybase(
+    const uchar4 *rgba, unsigned char *out,
+    int width, int height,
+    int y_base, int rows,        // regione: [y_base, y_base+rows)
+    int radius, const float *space_weight, const float *color_weight, int dim_kernel)
+{
+        int x = blockIdx.x * blockDim.x + threadIdx.x;
+    int y_local = blockIdx.y * blockDim.y + threadIdx.y;
 
     int y0, yn, x0, xn;
     //const float inv_2_sigma_r2 = 1.0f / (2.0f * sigma_r * sigma_r);
         
-    if (x < width && y < height) {
+    if (x < width && y_local < height) {
+            int y = y_base + y_local;               // y globale
+
         const int idx0 = y * width + x;
 
         uchar4 pixel = rgba[idx0];
@@ -483,10 +490,24 @@ unsigned char *out_inner=d_output+3*(width);
 bilateral_u8_gray<<<grid, block>>>(first_row_end, out_inner, width, height-2, radius, d_space_weight, d_color_weight, dim_kernel);
 
 //first row
-bilateral_u8_gray_unopt<<<grid, block>>>(rgba, out_first, width, 1, radius, d_space_weight, d_color_weight, dim_kernel);
+//bilateral_u8_gray_unopt<<<grid, block>>>(rgba, out_first, width, 1, radius, d_space_weight, d_color_weight, dim_kernel);
+bilateral_u8_gray_unopt_ybase<<<grid_row, block>>>(
+    rgba, d_output,                 // base pointers (immagine intera)
+    width, height,                  // DIMENSIONI REALI
+    0, 1,                           // y_base=0, rows=1  -> solo prima riga
+    radius,
+    d_space_weight, d_color_weight,
+    dim_kernel
+);
+
 //last row
-bilateral_u8_gray_unopt<<<grid, block>>>(last_row_start, out_last, width, 1, radius, d_space_weight, d_color_weight, dim_kernel);
-    // ========== Salvataggio immagini ==========
+//bilateral_u8_gray_unopt<<<grid, block>>>(last_row_start, out_last, width, 1, radius, d_space_weight, d_color_weight, dim_kernel);
+dim3 grid_last((width + block.x - 1)/block.x, (1 + block.y - 1)/block.y);
+bilateral_u8_gray_unopt_ybase<<<grid_last, block>>>(
+    rgba, d_output, width, height,
+    height-1, 1,
+    radius, d_space_weight, d_color_weight, dim_kernel); 
+// ========== Salvataggio immagini ==========
     
     CHECK(cudaMemcpy(h_output, d_output, imageSize, cudaMemcpyDeviceToHost));
     //CHECK(cudaMemcpy(d_output, h_output, imageSize, cudaMemcpyDeviceToHost));
