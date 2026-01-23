@@ -478,7 +478,7 @@ int main(int argc, char **argv) {
     //bilateral_u8_gray<<<grid, block>>>(rgba_inner_end, d_output, width, width*dim_kernel-1, radius, d_space_weight, d_color_weight, dim_kernel);
     
 //######################second try
-uchar4 *first_row_end=rgba+width;//non serve fare *3 perchè è uchar4
+uchar4 *first_row_end=rgba+width*dim_kernel;//non serve fare *3 perchè è uchar4
 uchar4 *last_row_start=rgba+(width*height)-(width);
 
 unsigned char *out_first=d_output;
@@ -486,7 +486,7 @@ unsigned char *out_last=d_output+(3*width*height)-(3*width);
 unsigned char *out_inner=d_output+3*(width);
 
 //inner
-bilateral_u8_gray<<<grid, block>>>(first_row_end, out_inner, width, height-1, radius, d_space_weight, d_color_weight, dim_kernel);
+bilateral_u8_gray<<<grid, block>>>(first_row_end, out_inner, width, height-dim_kernel, radius, d_space_weight, d_color_weight, dim_kernel);
 
 //first row
 //bilateral_u8_gray_unopt<<<grid, block>>>(rgba, out_first, width, 1, radius, d_space_weight, d_color_weight, dim_kernel);
@@ -495,7 +495,7 @@ dim3 grid_row((width + block.x - 1)/block.x,(1 + block.y - 1)/block.y);
 bilateral_u8_gray_unopt_ybase<<<grid_row, block>>>(
     rgba, d_output,                 // base pointers (immagine intera)
     width, height,                  // DIMENSIONI REALI
-    0, 1,                           // y_base=0, rows=1  -> solo prima riga
+    0, dim_kernel,                           // y_base=0, rows=1  -> solo prima riga
     radius,
     d_space_weight, d_color_weight,
     dim_kernel
@@ -505,7 +505,7 @@ bilateral_u8_gray_unopt_ybase<<<grid_row, block>>>(
 //bilateral_u8_gray_unopt<<<grid, block>>>(last_row_start, out_last, width, 1, radius, d_space_weight, d_color_weight, dim_kernel);
 bilateral_u8_gray_unopt_ybase<<<grid_row, block>>>(
     rgba, d_output, width, height,
-    height-1, 1,
+    height-dim_kernel, 1,
     radius, d_space_weight, d_color_weight, dim_kernel); 
 // ========== Salvataggio immagini ==========
     
