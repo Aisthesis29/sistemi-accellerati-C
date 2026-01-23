@@ -81,95 +81,27 @@ bool verifyResults(unsigned char* cpu_result, unsigned char* gpu_result, int siz
     }
     
     if (errors > 0) {
-        printf("Total errors: %d (grave: %d)\n", errors, grave_errors);
-        return false;
+        printf("Total errors: %d / %d (%.3f%%)\n", 
+                  errors, size, 100.0f * errors / size);
     }
-    return true;
+    
+    return grave_errors == 0;
 }
-
-// CPU reference (bilateral)
-void bilateral_u8_gray_cpu(unsigned char* input, unsigned char* output, int width, int height, int radius, int sigma_s, int sigma_r) {
-    const int dim_kernel = 2 * radius + 1;
-    const float inv_2_sigma_s2 = 1.0f / (2.0f * sigma_s * sigma_s);
-    const float inv_2_sigma_r2 = 1.0f / (2.0f * sigma_r * sigma_r);
-
-    // precompute space weights
-    float* space_weight = (float*)malloc(dim_kernel * dim_kernel * sizeof(float));
-    for(int j=-radius; j<=radius; j++) {
-        for(int i=-radius; i<=radius; i++) {
-            int ds2 = i*i + j*j;
-            space_weight[(j+radius)*dim_kernel + (i+radius)] = expf(-ds2 * inv_2_sigma_s2);
-        }
-    }
-
-    // precompute color weights (cn=3)
-    const int cn = 3;
-    float* color_weight = (float*)malloc(cn * 256 * sizeof(float));
-    for(int i=0; i<256*cn; i++) {
-        color_weight[i] = expf(i*i * -inv_2_sigma_r2);
-    }
-
-    for(int y=0; y<height; y++) {
-        for(int x=0; x<width; x++) {
-            int idx0 = y*width + x;
-            int base0 = idx0*cn;
-
-            int center_r = input[base0 + 0];
-            int center_g = input[base0 + 1];
-            int center_b = input[base0 + 2];
-
-            float wsum=0.f, sum_r=0.f, sum_g=0.f, sum_b=0.f;
-
-            int y0 = max_cpu(y-radius, 0);
-            int yn = min_cpu(y+radius, height-1);
-            int x0 = max_cpu(x-radius, 0);
-            int xn = min_cpu(x+radius, width-1);
-
-            for(int dy=y0; dy<=yn; dy++) {
-                for(int dx=x0; dx<=xn; dx++) {
-                    int idx = dy*width + dx;
-                    int base = idx*cn;
-
-                    int val_r = input[base + 0];
-                    int val_g = input[base + 1];
-                    int val_b = input[base + 2];
-
-                    int dr = abs(val_r-center_r) + abs(val_g-center_g) + abs(val_b-center_b);
-                    float w = space_weight[(dy - y + radius)*dim_kernel + (dx - x + radius)] * color_weight[dr];
-
-                    wsum += w;
-                    sum_r += w * val_r;
-                    sum_g += w * val_g;
-                    sum_b += w * val_b;
-                }
-            }
-
-            float invW = 1.f/wsum;
-            output[base0 + 0] = (unsigned char)(sum_r*invW + 0.5f);
-            output[base0 + 1] = (unsigned char)(sum_g*invW + 0.5f);
-            output[base0 + 2] = (unsigned char)(sum_b*invW + 0.5f);
-        }
-    }
-
-    free(space_weight);
-    free(color_weight);
-}
-
 __global__ void bilateral_u8_gray_unopt_ybase(
     const uchar4 *rgba, uchar4 *out,
     int width, int height,
     int y_base, int rows,        // regione: [y_base, y_base+rows)
     int radius, const float *space_weight, const float *color_weight, int dim_kernel)
 {
-    int x = blockIdx.x * blockDim.x + threadIdx.x;
+        int x = blockIdx.x * blockDim.x + threadIdx.x;
     int y_local = blockIdx.y * blockDim.y + threadIdx.y;
 
     int y0, yn, x0, xn;
-
-    if (x >= width || y_local >= rows) return;
+    //const float inv_2_sigma_r2 = 1.0f / (2.0f * sigma_r * sigma_r);
+        if (x >= width || y_local >= rows) return;
 
     if (x < width && y_local < height) {
-        int y = y_base + y_local;               // y globale
+            int y = y_base + y_local;               // y globale
 
         const int idx0 = y * width + x;
 
@@ -187,11 +119,16 @@ __global__ void bilateral_u8_gray_unopt_ybase(
         yn = min(y+radius, height-1);
         x0 = max(x-radius, 0);
         xn = min(x+radius, width-1);
-
-        for (int dy = y0; dy <= yn; ++dy) {
+        int i=0, bordo = 0;
+        float w,w_s;
+    
+ for (int dy = y0; dy <= yn; ++dy) {
             for (int dx = x0; dx <= xn; ++dx) {
                 int idx = dy * width + dx;
 
+             /*   if(y==10&&x==2){
+                    printf("    CIAO DA BORDO=%d",dim_kernel);
+                }*/
                 uchar4 val = rgba[idx];
                 int val_r = (int)val.x;
                 int val_g = (int)val.y;
@@ -201,27 +138,45 @@ __global__ void bilateral_u8_gray_unopt_ybase(
                 float w = space_weight[(dx-x+radius)*dim_kernel+(dy-y+radius)] * color_weight[dr];
 
                 wsum += w;
-                sum_r = fmaf(w, val_r, sum_r);
-                sum_g = fmaf(w, val_g, sum_g);
-                sum_b = fmaf(w, val_b, sum_b);
+                sum_r = fmaf(w, val_r, sum_r);  //sum_r += w * val_r;
+                sum_g = fmaf(w, val_g, sum_g);  //sum_g += w * val_g;
+                sum_b = fmaf(w, val_b, sum_b);  //sum_b += w * val_b;
             }
         }
+        
+       
 
-        float inv_Wsum = 1.f / wsum;
+       
+        float inv_Wsum = 1.f/wsum;
         unsigned char rr = (unsigned char)(sum_r * inv_Wsum + 0.5f);
         unsigned char gg = (unsigned char)(sum_g * inv_Wsum + 0.5f);
         unsigned char bb = (unsigned char)(sum_b * inv_Wsum + 0.5f);
         out[idx0] = make_uchar4(rr, gg, bb, 255);
+      
+       
+       
+       /* if(idx0==DEBUG_IDX){
+           printf("gPU idx=%d\nin   = R:%d G:%d B:%d\n"
+                  "\ntmp  = R:%d G:%d B:%d\n",
+                    idx0,
+                    
+                    rgba[idx0].x,
+                    rgba[idx0].y,
+                    rgba[idx0].z,
+                    out[idx0*3],
+                    out[idx0*3+1],
+                    out[idx0*3+2]);
+        }*/
     }
 }
-
-__global__ void bilateral_u8_gray(uchar4 *rgba, uchar4 *out, int width, int height, int y_base, int rows, int radius, float *space_weight, float *color_weight, int dim_kernel) {
+__global__ void bilateral_u8_gray(uchar4 *rgba, uchar4 *out, int width, int height,int y_base,int rows, int radius, float *space_weight, float *color_weight, int dim_kernel) {
     int x = blockIdx.x * blockDim.x + threadIdx.x;
     int y_local = blockIdx.y * blockDim.y + threadIdx.y;
 
     int y0, yn, x0, xn;
+    //const float inv_2_sigma_r2 = 1.0f / (2.0f * sigma_r * sigma_r);
         
-    if (x >= width || y_local >= rows) return;
+   if (x >= width || y_local >= rows) return;
 
     if (x < width && y_local < height) {
         int y = y_base + y_local;
@@ -241,31 +196,188 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, uchar4 *out, int width, int heig
         yn = min(y+radius, height-1);
         x0 = max(x-radius, 0);
         xn = min(x+radius, width-1);
+        int i=0, bordo = 0;
+        
+        
+        
+        float w,w_s;
+        for (int dy = y0; dy < y; ++dy) {
+            
 
-        for (int dy = y0; dy <= yn; ++dy) {
             for (int dx = x0; dx <= xn; ++dx) {
-                int idx = dy * width + dx;
+             int idxUpp = dy*width+dx;
+             
+               // if(y==10){
+                 //   printf("valore=%d",dim_kernel);
+               // }
+              
+             int idxDown1 = (dy+dim_kernel-1-2*(i))*width+dx;
+             int dy_mirror = 2*y - dy; // se dy<y, allora dy_mirror>y 
+             int idxDown = dy_mirror * width + dx; //##################################################QUIII
+             
+             // if(idx0==DEBUG_IDX){
+           //printf( "sono entrato");
+             //   printf("down1=%d down=%d\n",idxDown1,idxDown);
+                //     }
+                uchar4 valUpp = rgba[idxUpp];
+                int val_rU = (int)valUpp.x;
+                int val_gU = (int)valUpp.y;
+                int val_bU = (int)valUpp.z;
+                uchar4 valDown = rgba[idxDown];
+                int val_rD = (int)valDown.x;
+                int val_gD = (int)valDown.y;
+                int val_bD = (int)valDown.z;
 
-                uchar4 val = rgba[idx];
-                int val_r = (int)val.x;
-                int val_g = (int)val.y;
-                int val_b = (int)val.z;
-
-                int dr  = abs(val_r - center_r)+abs(val_g - center_g)+abs(val_b - center_b);
-                float w = space_weight[(dx-x+radius)*dim_kernel+(dy-y+radius)] * color_weight[dr];
-
+                w_s = space_weight[(dx-x+radius)*dim_kernel+(dy-y+radius)];
+                int dr  = abs(val_rU - center_r)+abs(val_gU - center_g)+abs(val_bU - center_b);
+                w = w_s * color_weight[dr];
                 wsum += w;
-                sum_r = fmaf(w, val_r, sum_r);
-                sum_g = fmaf(w, val_g, sum_g);
-                sum_b = fmaf(w, val_b, sum_b);
-            }
-        }
+                sum_r = fmaf(w, val_rU, sum_r);  //sum_r += w * val_r;
+                sum_g = fmaf(w, val_gU, sum_g);  //sum_g += w * val_g;
+                sum_b = fmaf(w, val_bU, sum_b);  //sum_b += w * val_b;
+                int drD  = abs(val_rD - center_r)+abs(val_gD - center_g)+abs(val_bD - center_b);
+                w = w_s * color_weight[drD];
+                wsum += w;
+                sum_r = fmaf(w, val_rD, sum_r);  //sum_r += w * val_r;
+                sum_g = fmaf(w, val_gD, sum_g);  //sum_g += w * val_g;
+                sum_b = fmaf(w, val_bD, sum_b);  //sum_b += w * val_b;
+                
+              // sum_r=0;
+            //sum_g=0;
+            //sum_b=0;
+            /*
+             if(idx0==DEBUG_IDX){
+           printf( "SUM_R_G_B=%f %f %f",sum_r,sum_g,sum_b); //valori NON ok
+           printf("\nw?=%f",w);
+                      printf("\nw_s=%f",w_s);
 
+                      //printf( "val rgU etc U=%d %d %d",val_rU,val_gU,val_bU); valori ok
+                      //printf( "val rgD etc D=%d %d %d",val_rD,val_gD,val_bD);valori ok
+
+                }*/
+               
+            }
+             i++;
+              //wsum=0;
+             
+        }
+        
+        for(int dx=x0; dx<=xn; dx++) {
+            int idx = y * width + dx;
+            uchar4 val = rgba[idx];
+            int val_r = (int)val.x;
+            int val_g = (int)val.y;
+            int val_b = (int)val.z;
+
+            int dr  = abs(val_r - center_r)+abs(val_g - center_g)+abs(val_b - center_b);
+            float w = space_weight[(dx-x+radius)*dim_kernel+radius] * color_weight[dr];
+
+            wsum += w;
+            sum_r = fmaf(w, val_r, sum_r);  //sum_r += w * val_r;
+            sum_g = fmaf(w, val_g, sum_g);  //sum_g += w * val_g;
+            sum_b = fmaf(w, val_b, sum_b);  //sum_b += w * val_b;
+            
+        }
         float inv_Wsum = 1.f/wsum;
         unsigned char rr = (unsigned char)(sum_r * inv_Wsum + 0.5f);
         unsigned char gg = (unsigned char)(sum_g * inv_Wsum + 0.5f);
         unsigned char bb = (unsigned char)(sum_b * inv_Wsum + 0.5f);
         out[idx0] = make_uchar4(rr, gg, bb, 255);
+      
+       
+       
+       /* if(idx0==DEBUG_IDX){
+           printf("gPU idx=%d\nin   = R:%d G:%d B:%d\n"
+                  "\ntmp  = R:%d G:%d B:%d\n",
+                    idx0,
+                    
+                    rgba[idx0].x,
+                    rgba[idx0].y,
+                    rgba[idx0].z,
+                    out[idx0*3],
+                    out[idx0*3+1],
+                    out[idx0*3+2]);
+        }*/
+    }
+}
+
+
+
+void bilateral_u8_gray_cpu(unsigned char *h_input, unsigned char *out, int width, int height, int radius, int sigma_s, int sigma_r) {
+    if(!out || ! h_input) {
+        printf("errore nel caricamento di una matrice\n");
+        printf("out=[%d]\t", out);
+        printf("h_input=[%d]", h_input);
+    }
+    if (!out || width <= 0 || height <= 0 || radius < 0) 
+        return;
+    if (sigma_s <= 0 || sigma_r <= 0) 
+        return;
+
+    int y0, yn, x0, xn;
+    const float inv_2_sigma_s2 = 1.0f / (2.0f * sigma_s * sigma_s);
+    const float inv_2_sigma_r2 = 1.0f / (2.0f * sigma_r * sigma_r);
+    for (int y = 0; y < height; ++y) {
+        for (int x = 0; x < width; ++x) {
+            int idx0 = y * width + x;
+            int center_r = (int)h_input[idx0*3];
+            int center_g = (int)h_input[idx0*3+1];
+            int center_b = (int)h_input[idx0*3+2];
+
+            float wsum = 0.0f;
+            float sum_r = 0.0f;
+            float sum_g = 0.0f;
+            float sum_b = 0.0f;
+
+            y0 = max_cpu(y-radius, 0);
+            yn = min_cpu(y+radius, height-1);
+            x0 = max_cpu(x-radius, 0);
+            xn = min_cpu(x+radius, width-1);
+            for (int dy = y0; dy <= yn; ++dy) {
+                //int yy = clampi_cpu(y + dy, 0, height - 1);
+
+                for (int dx = x0; dx <= xn; ++dx) {
+                    //int xx = clampi_cpu(x + dx, 0, width - 1);
+                    //int idx = yy * width + xx;
+                    int idx = dy * width + dx;
+
+                    int val_r = (int)h_input[idx*3];
+                    int val_g = (int)h_input[idx*3+1];
+                    int val_b = (int)h_input[idx*3+2];
+
+                    int ds2 = (dx-x) * (dx-x) + (dy-y) * (dy-y);
+                    int dr  = abs(val_r - center_r)+abs(val_g - center_g)+abs(val_b - center_b);
+                    int dr2 = dr * dr;
+
+                    float w_s = expf(-ds2 * inv_2_sigma_s2);
+                    float w_r = expf(-dr2 * inv_2_sigma_r2);
+                    float w   = w_s * w_r;
+                    wsum += w;
+                    sum_r += w * val_r;
+                    sum_g += w * val_g;
+                    sum_b += w * val_b;
+                }
+            }
+            float inv_Wsum = 1.f/wsum;
+            out[idx0*3] = (unsigned char)(sum_r*inv_Wsum+0.5f);
+            out[idx0*3+1] = (unsigned char)(sum_g*inv_Wsum+0.5f);
+            out[idx0*3+2] = (unsigned char)(sum_b*inv_Wsum+0.5f);
+
+            /*if (idx0 > (height * width) / 2 && out[idx0 * 3] >= 200&&peso>=2 ) {
+                printf("idx0 = %d, peso=%f\n", idx0,peso);
+            
+                printf("original (h_input): R=%u G=%u B=%u\n",
+                                                              h_input[idx0 * 3],
+                                                              h_input[idx0 * 3 + 1],
+                                                              h_input[idx0 * 3 + 2]);
+
+                printf("new (out): R=%u G=%u B=%u\n",
+                                                    out[idx0 * 3],
+                                                    out[idx0 * 3 + 1],
+                                                    out[idx0 * 3 + 2]);
+            }*/
+
+        }
     }
 }
 
@@ -294,6 +406,10 @@ int main(int argc, char **argv) {
         return 2;
     }
     int radius = dim_kernel/2;
+    /*const char* inputFile = argv[1];
+    int radius = atoi(argv[2]);
+    int sigma_s = atoi(argv[3]);
+    int  sigma_r = atoi(argv[4]);*/
 
     int blockSize = 16;
 
@@ -322,10 +438,10 @@ int main(int argc, char **argv) {
     CHECK(cudaMalloc((void**)&rgba, (size_t)width * height * sizeof(uchar4)));
     CHECK(cudaMalloc((void**)&d_output_rgba, (size_t)width * height * sizeof(uchar4)));
 
-    CHECK(cudaMemcpy(d_input, h_input,  imageSize, cudaMemcpyHostToDevice));
+    CHECK(cudaMemcpy(d_input, h_input,  imageSize, cudaMemcpyHostToDevice)); //match anche qui
 
     dim3 block(blockSize, blockSize);
-    dim3 grid((width + block.x - 1) / block.x, (height) + block.y - 1) / block.y);
+    dim3 grid((width + block.x - 1) / block.x, (height + block.y - 1) / block.y);
     // ========== Operazioni reali ==========
     memory_bella<<<grid, block>>>(d_input, rgba, width, height);
     int ds2;
@@ -349,54 +465,82 @@ int main(int argc, char **argv) {
     float color_weight[cn*256];
     for( int i = 0; i < 256 * cn; i++ ){
             color_weight[i] = expf(i * i * -inv_2_sigma_r2);
+            //printf("dr: %d, %f\n", i, color_weight[i]);
     }
     float *d_color_weight;
 
     CHECK(cudaMalloc((void**)&d_color_weight, sizeof(float)*cn*256));
     CHECK(cudaMemcpy(d_color_weight, color_weight, sizeof(float)*cn*256, cudaMemcpyHostToDevice));
 
-    uchar4 *rgba_inner=rgba+(width*dim_kernel);
+    uchar4 *rgba_inner=rgba+(width*dim_kernel); //rappresenta il punto di partenza dell'inner. forse serve fare un +1
 
-    uchar4 *rgba_border1=rgba;
+    uchar4 *rgba_border1=rgba; //il primo bordo inizia da rgba, finisce a width*dim_kernel
 
-    uchar4 *rgba_inner_end= rgba+(width*height)-(width*dim_kernel);
+    uchar4 *rgba_inner_end= rgba+(width*height)-(width*dim_kernel); //puntatore che punta alla fine del inner end
+    //bilateral_u8_gray<<<grid, block>>>(rgba, d_output, width, height, radius, d_space_weight, d_color_weight, dim_kernel);
+    
+    //bilateral_u8_gray<<<grid, block>>>(rgba_inner, d_output, width, height-dim_kernel, radius, d_space_weight, d_color_weight, dim_kernel);
+    
+    //ilateral_u8_gray<<<grid, block>>>(rgba_border1, d_output, width, width*dim_kernel, radius, d_space_weight, d_color_weight, dim_kernel);
 
-    //######################second try
-    uchar4 *first_row_end=rgba+width*dim_kernel;
-    uchar4 *last_row_start=rgba+(width*height)-(width);
+    //bilateral_u8_gray<<<grid, block>>>(rgba_inner_end, d_output, width, width*dim_kernel-1, radius, d_space_weight, d_color_weight, dim_kernel);
+    
+//######################second try
+uchar4 *first_row_end=rgba+width*dim_kernel;//non serve fare *3 perchè è uchar4
+uchar4 *last_row_start=rgba+(width*height)-(width);
 
-    uchar4 *out_first = d_output_rgba;
+uchar4 *out_first = d_output_rgba;
 
-    int inner_rows=height-(dim_kernel*2);
+//inner
+//int inner_rows=height-(dim_kernel); //usa solo questo con 2 kernel totali (up+middle)
+int inner_rows=height-(dim_kernel*2); //usa questo per 3 kernel (up+mid+bottom)
     dim3 grid_inner((width + block.x - 1) / block.x, (inner_rows + block.y - 1) / block.y);
 
-    bilateral_u8_gray<<<grid_inner, block>>>(rgba, out_first, width, height, dim_kernel, inner_rows, radius, d_space_weight, d_color_weight, dim_kernel);
+bilateral_u8_gray<<<grid_inner, block>>>(rgba, out_first, width, height, dim_kernel, inner_rows, radius, d_space_weight, d_color_weight, dim_kernel);
 
-    int rows =dim_kernel;
-    dim3 grid_row((width + block.x - 1) / block.x,
-                  (rows  + block.y - 1) / block.y);
-    bilateral_u8_gray_unopt_ybase<<<grid_row, block>>>(
-        rgba, out_first,
-        width, height,
-        0, rows,
-        radius,
-        d_space_weight, d_color_weight,
-        dim_kernel
-    );
+//first row
+//bilateral_u8_gray_unopt<<<grid, block>>>(rgba, out_first, width, 1, radius, d_space_weight, d_color_weight, dim_kernel);
+//dim3 block(blockSize, blockSize);
+int rows =dim_kernel;
+dim3 grid_row((width + block.x - 1) / block.x,
+              (rows  + block.y - 1) / block.y);
+bilateral_u8_gray_unopt_ybase<<<grid_row, block>>>(
+    rgba, out_first,                 // base pointers (immagine intera)
+    width, height,                  // DIMENSIONI REALI
+    0, rows,                           // y_base=0, rows=1  -> solo prima riga
+    radius,
+    d_space_weight, d_color_weight,
+    dim_kernel
+);
+/*dim3 grid_row_ALT((width + block.x - 1) / block.x,
+              ((height-rows)  + block.y - 1) / block.y);
+bilateral_u8_gray_unopt_ybase<<<grid_row_ALT, block>>>(
+    rgba, out_first,                 // base pointers (immagine intera)
+    width, height,                  // DIMENSIONI REALI
+    1, height-rows,                           // y_base=0, rows=1  -> solo prima riga
+    radius,
+    d_space_weight, d_color_weight,
+    dim_kernel
+);*/
+//last row
+bilateral_u8_gray_unopt_ybase<<<grid_row, block>>>(
+    rgba, out_first,                 // base pointers (immagine intera)
+    width, height,                  // DIMENSIONI REALI
+    rows+inner_rows, rows,                           // y_base=0, rows=1  -> solo prima riga
+    radius,
+    d_space_weight, d_color_weight,
+    dim_kernel
+);
 
-    //last row
-    bilateral_u8_gray_unopt_ybase<<<grid_row, block>>>(
-        rgba, out_first,
-        width, height,
-        rows+inner_rows, rows,
-        radius,
-        d_space_weight, d_color_weight,
-        dim_kernel
-    );
-
-    // ========== Salvataggio immagini ==========
+//bilateral_u8_gray_unopt<<<grid, block>>>(last_row_start, out_last, width, 1, radius, d_space_weight, d_color_weight, dim_kernel);
+/*bilateral_u8_gray_unopt_ybase<<<grid_row, block>>>(
+    rgba, d_output, width, height,
+    height-(dim_kernel+1), dim_kernel+1,
+    radius, d_space_weight, d_color_weight, dim_kernel); */
+// ========== Salvataggio immagini ==========
     
     CHECK(cudaMemcpy(h_output_rgba, d_output_rgba, (size_t)width * height * sizeof(uchar4), cudaMemcpyDeviceToHost));
+    //CHECK(cudaMemcpy(d_output, h_output, imageSize, cudaMemcpyDeviceToHost));
     CHECK(cudaGetLastError());
     CHECK(cudaDeviceSynchronize());
     stbi_write_png("risultato.png", width, height, 4, h_output_rgba, width * 4);
@@ -407,7 +551,6 @@ int main(int argc, char **argv) {
         h_output_rgb[3*i + 1] = h_output_rgba[i].y;
         h_output_rgb[3*i + 2] = h_output_rgba[i].z;
     }
-
     printf("\nFinito bilateral gpu!!\n\n");
 
     //Parte CPU + controllo
