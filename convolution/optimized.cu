@@ -473,15 +473,19 @@ int main(int argc, char **argv) {
     //bilateral_u8_gray<<<grid, block>>>(rgba_inner_end, d_output, width, width*dim_kernel-1, radius, d_space_weight, d_color_weight, dim_kernel);
     
 //######################second try
-uchar4 *first_row_end=rgba+width*3; //hardcoded channels
-uchar4 *last_row_start=rgba+(3*width*height)-(3*width);
+uchar4 *first_row_end=rgba+width;//non serve fare *3 perchè è uchar4
+uchar4 *last_row_start=rgba+(width*height)-(width);
+
+uchar4 *out_first=d_output;
+uchar4 *out_last=d_output+(width*height)-(width);
+uchar4 *out_inner=d_output+width;
 //inner
-bilateral_u8_gray<<<grid, block>>>(first_row_end, d_output, width, height, radius, d_space_weight, d_color_weight, dim_kernel);
+bilateral_u8_gray<<<grid, block>>>(first_row_end, out_inner, width, height-2, radius, d_space_weight, d_color_weight, dim_kernel);
 
 //first row
-bilateral_u8_gray_unopt<<<grid, block>>>(rgba, d_output, width, 1, radius, d_space_weight, d_color_weight, dim_kernel);
+bilateral_u8_gray_unopt<<<grid, block>>>(rgba, out_first, width, 1, radius, d_space_weight, d_color_weight, dim_kernel);
 //last row
-bilateral_u8_gray_unopt<<<grid, block>>>(last_row_start, d_output, width, 1, radius, d_space_weight, d_color_weight, dim_kernel);
+bilateral_u8_gray_unopt<<<grid, block>>>(last_row_start, out_inner, width, 1, radius, d_space_weight, d_color_weight, dim_kernel);
     // ========== Salvataggio immagini ==========
     
     CHECK(cudaMemcpy(h_output, d_output, imageSize, cudaMemcpyDeviceToHost));
