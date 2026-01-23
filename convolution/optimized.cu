@@ -486,12 +486,12 @@ unsigned char *out_last=d_output+(3*width*height)-(3*width*dim_kernel);
 unsigned char *out_inner=d_output+3*(width)*dim_kernel;
 
 //inner
-//bilateral_u8_gray<<<grid, block>>>(first_row_end, out_inner, width, height-(dim_kernel+1), radius, d_space_weight, d_color_weight, dim_kernel);
+bilateral_u8_gray<<<grid, block>>>(first_row_end, out_inner, width, height-(dim_kernel+1), radius, d_space_weight, d_color_weight, dim_kernel);
 
 //first row
 //bilateral_u8_gray_unopt<<<grid, block>>>(rgba, out_first, width, 1, radius, d_space_weight, d_color_weight, dim_kernel);
 //dim3 block(blockSize, blockSize);
-int rows =1;
+int rows =dim_kernel;
 dim3 grid_row((width + block.x - 1) / block.x,
               (rows  + block.y - 1) / block.y);
 bilateral_u8_gray_unopt_ybase<<<grid_row, block>>>(
@@ -502,7 +502,7 @@ bilateral_u8_gray_unopt_ybase<<<grid_row, block>>>(
     d_space_weight, d_color_weight,
     dim_kernel
 );
-dim3 grid_row_ALT((width + block.x - 1) / block.x,
+/*dim3 grid_row_ALT((width + block.x - 1) / block.x,
               ((height-rows)  + block.y - 1) / block.y);
 bilateral_u8_gray_unopt_ybase<<<grid_row_ALT, block>>>(
     rgba, out_first,                 // base pointers (immagine intera)
@@ -511,7 +511,7 @@ bilateral_u8_gray_unopt_ybase<<<grid_row_ALT, block>>>(
     radius,
     d_space_weight, d_color_weight,
     dim_kernel
-);
+);*/
 //last row
 //bilateral_u8_gray_unopt<<<grid, block>>>(last_row_start, out_last, width, 1, radius, d_space_weight, d_color_weight, dim_kernel);
 /*bilateral_u8_gray_unopt_ybase<<<grid_row, block>>>(
