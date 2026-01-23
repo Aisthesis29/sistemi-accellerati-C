@@ -60,7 +60,109 @@ __global__ void memory_bella(unsigned char *h_input, uchar4* rgba, int width, in
         rgba[pixel] = make_uchar4(r, g, b, 255);
     }
 }
+// Funzione per verificare correttezza
+bool verifyResults(unsigned char* cpu_result, unsigned char* gpu_result, int size, const char* label)
+{
+    int errors = 0;
+    int grave_errors=0;
+    for (int i = 0; i < size; i++) {
+        // Tolleriamo differenze di ±1 dovute ad arrotondamenti
+        int diff = abs((int)cpu_result[i] - (int)gpu_result[i]);
+        if (diff >= 1) {
+            errors++;
+            if(diff>=2){
+                grave_errors++;
+            }
+            if (errors < 4) {
+                printf("Mismatch at index %d: CPU=%d, %s=%d (diff=%d)\n", 
+                        i, cpu_result[i], label, gpu_result[i], diff);
+            }
+        }
+    }
+    
+    if (errors > 0) {
+        printf("Total errors: %d / %d (%.3f%%)\n", 
+                  errors, size, 100.0f * errors / size);
+    }
+    
+    return grave_errors == 0;
+}
+__global__ void bilateral_u8_gray_unopt(uchar4 *rgba, unsigned char *out, int width, int height, int radius, float *space_weight, float *color_weight, int dim_kernel) {
+    int x = blockIdx.x * blockDim.x + threadIdx.x;
+    int y = blockIdx.y * blockDim.y + threadIdx.y;
 
+    int y0, yn, x0, xn;
+    //const float inv_2_sigma_r2 = 1.0f / (2.0f * sigma_r * sigma_r);
+        
+    if (x < width && y < height) {
+        const int idx0 = y * width + x;
+
+        uchar4 pixel = rgba[idx0];
+        int center_r = (int)pixel.x;
+        int center_g = (int)pixel.y;
+        int center_b = (int)pixel.z;
+
+        float wsum = 0.0f;
+        float sum_r = 0.0f;
+        float sum_g = 0.0f;
+        float sum_b = 0.0f;
+
+        y0 = max(y-radius, 0);
+        yn = min(y+radius, height-1);
+        x0 = max(x-radius, 0);
+        xn = min(x+radius, width-1);
+        int i=0, bordo = 0;
+        if(y<=radius || (y+radius)>=height) {
+            bordo = 1;
+        }
+        float w,w_s;
+    
+ for (int dy = y0; dy <= yn; ++dy) {
+            for (int dx = x0; dx <= xn; ++dx) {
+                int idx = dy * width + dx;
+
+             /*   if(y==10&&x==2){
+                    printf("    CIAO DA BORDO=%d",dim_kernel);
+                }*/
+                uchar4 val = rgba[idx];
+                int val_r = (int)val.x;
+                int val_g = (int)val.y;
+                int val_b = (int)val.z;
+
+                int dr  = abs(val_r - center_r)+abs(val_g - center_g)+abs(val_b - center_b);
+                float w = space_weight[(dx-x+radius)*dim_kernel+(dy-y+radius)] * color_weight[dr];
+
+                wsum += w;
+                sum_r = fmaf(w, val_r, sum_r);  //sum_r += w * val_r;
+                sum_g = fmaf(w, val_g, sum_g);  //sum_g += w * val_g;
+                sum_b = fmaf(w, val_b, sum_b);  //sum_b += w * val_b;
+            }
+        }
+        
+       
+
+       
+        float inv_Wsum = 1.f/wsum;
+        out[idx0*3] = (unsigned char)(sum_r*inv_Wsum+0.5f);
+        out[idx0*3+1] = (unsigned char)(sum_g*inv_Wsum+0.5f);
+        out[idx0*3+2] = (unsigned char)(sum_b*inv_Wsum+0.5f);
+      
+       
+       
+       /* if(idx0==DEBUG_IDX){
+           printf("gPU idx=%d\nin   = R:%d G:%d B:%d\n"
+                  "\ntmp  = R:%d G:%d B:%d\n",
+                    idx0,
+                    
+                    rgba[idx0].x,
+                    rgba[idx0].y,
+                    rgba[idx0].z,
+                    out[idx0*3],
+                    out[idx0*3+1],
+                    out[idx0*3+2]);
+        }*/
+    }
+}
 __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, int height, int radius, float *space_weight, float *color_weight, int dim_kernel) {
     int x = blockIdx.x * blockDim.x + threadIdx.x;
     int y = blockIdx.y * blockDim.y + threadIdx.y;
@@ -189,33 +291,7 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
     }
 }
 
-// Funzione per verificare correttezza
-bool verifyResults(unsigned char* cpu_result, unsigned char* gpu_result, int size, const char* label)
-{
-    int errors = 0;
-    int grave_errors=0;
-    for (int i = 0; i < size; i++) {
-        // Tolleriamo differenze di ±1 dovute ad arrotondamenti
-        int diff = abs((int)cpu_result[i] - (int)gpu_result[i]);
-        if (diff >= 1) {
-            errors++;
-            if(diff>=2){
-                grave_errors++;
-            }
-            if (errors < 4) {
-                printf("Mismatch at index %d: CPU=%d, %s=%d (diff=%d)\n", 
-                        i, cpu_result[i], label, gpu_result[i], diff);
-            }
-        }
-    }
-    
-    if (errors > 0) {
-        printf("Total errors: %d / %d (%.3f%%)\n", 
-                  errors, size, 100.0f * errors / size);
-    }
-    
-    return grave_errors == 0;
-}
+
 
 void bilateral_u8_gray_cpu(unsigned char *h_input, unsigned char *out, int width, int height, int radius, int sigma_s, int sigma_r) {
     if(!out || ! h_input) {
@@ -388,15 +464,25 @@ int main(int argc, char **argv) {
     uchar4 *rgba_border1=rgba; //il primo bordo inizia da rgba, finisce a width*dim_kernel
 
     uchar4 *rgba_inner_end= rgba+(width*height)-(width*dim_kernel); //puntatore che punta alla fine del inner end
-    bilateral_u8_gray<<<grid, block>>>(rgba, d_output, width, height, radius, d_space_weight, d_color_weight, dim_kernel);
+    //bilateral_u8_gray<<<grid, block>>>(rgba, d_output, width, height, radius, d_space_weight, d_color_weight, dim_kernel);
+    
     //bilateral_u8_gray<<<grid, block>>>(rgba_inner, d_output, width, height-dim_kernel, radius, d_space_weight, d_color_weight, dim_kernel);
     
     //ilateral_u8_gray<<<grid, block>>>(rgba_border1, d_output, width, width*dim_kernel, radius, d_space_weight, d_color_weight, dim_kernel);
 
     //bilateral_u8_gray<<<grid, block>>>(rgba_inner_end, d_output, width, width*dim_kernel-1, radius, d_space_weight, d_color_weight, dim_kernel);
     
-    // ========== Salvataggio immagini ==========
+//######################second try
+uchar4 *first_row_end=rgba+width*3; //hardcoded channels
+uchar4 *last_row_start=rgba+(3*width*height)-(3*width);
+//inner
+bilateral_u8_gray_unopt<<<grid, block>>>(first_row_end, d_output, width, height-2, radius, d_space_weight, d_color_weight, dim_kernel);
 
+//first row
+bilateral_u8_gray<<<grid, block>>>(rgba, d_output, width, 1, radius, d_space_weight, d_color_weight, dim_kernel);
+//last row
+bilateral_u8_gray_unopt<<<grid, block>>>(last_row_start, d_output, width, 1, radius, d_space_weight, d_color_weight, dim_kernel);
+    // ========== Salvataggio immagini ==========
     
     CHECK(cudaMemcpy(h_output, d_output, imageSize, cudaMemcpyDeviceToHost));
     //CHECK(cudaMemcpy(d_output, h_output, imageSize, cudaMemcpyDeviceToHost));
