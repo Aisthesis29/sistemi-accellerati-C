@@ -489,7 +489,7 @@ unsigned char *out_inner=d_output+3*(width)*dim_kernel;
 int inner_rows=height-(dim_kernel);
     dim3 grid_inner((width + block.x - 1) / block.x, (inner_rows + block.y - 1) / block.y);
 
-bilateral_u8_gray<<<grid, block>>>(first_row_end, out_inner, width,inner_rows, radius, d_space_weight, d_color_weight, dim_kernel);
+bilateral_u8_gray<<<grid_inner, block>>>(first_row_end, out_inner, width,inner_rows, radius, d_space_weight, d_color_weight, dim_kernel);
 
 //first row
 //bilateral_u8_gray_unopt<<<grid, block>>>(rgba, out_first, width, 1, radius, d_space_weight, d_color_weight, dim_kernel);
