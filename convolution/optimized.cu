@@ -476,7 +476,7 @@ int main(int argc, char **argv) {
 uchar4 *first_row_end=rgba+width*3; //hardcoded channels
 uchar4 *last_row_start=rgba+(3*width*height)-(3*width);
 //inner
-bilateral_u8_gray<<<grid, block>>>(first_row_end, d_output, width, height-2, radius, d_space_weight, d_color_weight, dim_kernel);
+bilateral_u8_gray<<<grid, block>>>(first_row_end, d_output, width, height, radius, d_space_weight, d_color_weight, dim_kernel);
 
 //first row
 bilateral_u8_gray_unopt<<<grid, block>>>(rgba, d_output, width, 1, radius, d_space_weight, d_color_weight, dim_kernel);
