@@ -491,7 +491,7 @@ bilateral_u8_gray<<<grid, block>>>(first_row_end, out_inner, width, height-dim_k
 //first row
 //bilateral_u8_gray_unopt<<<grid, block>>>(rgba, out_first, width, 1, radius, d_space_weight, d_color_weight, dim_kernel);
 //dim3 block(blockSize, blockSize);
-dim3 grid_rows((width + block.x - 1)/block.x,(dim_kernel + block.y - 1)/block.y);
+dim3 grid_row((width + block.x - 1)/block.x,(dim_kernel + block.y - 1)/block.y);
 bilateral_u8_gray_unopt_ybase<<<grid_row, block>>>(
     rgba, out_first,                 // base pointers (immagine intera)
     width, height,                  // DIMENSIONI REALI
