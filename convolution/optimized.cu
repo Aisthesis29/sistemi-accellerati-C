@@ -474,11 +474,11 @@ int main(int argc, char **argv) {
     
 //######################second try
 uchar4 *first_row_end=rgba+width;//non serve fare *3 perchè è uchar4
-uchar4 *last_row_start=rgba+(width*height)-(width);
+uchar4 *last_row_start=rgba+(width*height)-(width)+1;
 
 unsigned char *out_first=d_output;
-unsigned char *out_last=d_output+(3*width*height)-(3*width);
-unsigned char *out_inner=d_output+3*width;
+unsigned char *out_last=d_output+(3*width*height)-(3*width)+1;
+unsigned char *out_inner=d_output+3*(width);
 //inner
 bilateral_u8_gray<<<grid, block>>>(first_row_end, out_inner, width, height-2, radius, d_space_weight, d_color_weight, dim_kernel);
 
