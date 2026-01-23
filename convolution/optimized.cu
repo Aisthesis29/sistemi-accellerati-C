@@ -478,7 +478,7 @@ int main(int argc, char **argv) {
     //bilateral_u8_gray<<<grid, block>>>(rgba_inner_end, d_output, width, width*dim_kernel-1, radius, d_space_weight, d_color_weight, dim_kernel);
     
 //######################second try
-uchar4 *first_row_end=rgba+width*dim_kernel;//non serve fare *3 perchè è uchar4
+uchar4 *first_row_end=rgba+width*(dim_kernel+1);//non serve fare *3 perchè è uchar4
 uchar4 *last_row_start=rgba+(width*height)-(width);
 
 unsigned char *out_first=d_output;
