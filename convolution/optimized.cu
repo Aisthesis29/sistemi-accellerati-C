@@ -94,15 +94,17 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
             
 
             for (int dx = x0; dx <= xn; ++dx) {
-                int idxUpp = dy*width+dx;
+             int idxUpp = dy*width+dx;
+             
                // if(y==10){
                  //   printf("valore=%d",dim_kernel);
                // }
               
-                int idxDown1 = (dy+dim_kernel-1-2*(i))*width+dx;
+             int idxDown1 = (dy+dim_kernel-1-2*(i))*width+dx;
              int dy_mirror = 2*y - dy; // se dy<y, allora dy_mirror>y 
              int idxDown = dy_mirror * width + dx; //##################################################QUIII
-            // if(idx0==DEBUG_IDX){
+             
+             // if(idx0==DEBUG_IDX){
            //printf( "sono entrato");
              //   printf("down1=%d down=%d\n",idxDown1,idxDown);
                 //     }
@@ -386,12 +388,12 @@ int main(int argc, char **argv) {
     uchar4 *rgba_border1=rgba; //il primo bordo inizia da rgba, finisce a width*dim_kernel
 
     uchar4 *rgba_inner_end= rgba+(width*height)-(width*dim_kernel); //puntatore che punta alla fine del inner end
-    //bilateral_u8_gray<<<grid, block>>>(rgba, d_output, width, height, radius, d_space_weight, d_color_weight, dim_kernel);
-    bilateral_u8_gray<<<grid, block>>>(rgba_inner, d_output, width, height-dim_kernel, radius, d_space_weight, d_color_weight, dim_kernel);
+    bilateral_u8_gray<<<grid, block>>>(rgba, d_output, width, height, radius, d_space_weight, d_color_weight, dim_kernel);
+    //bilateral_u8_gray<<<grid, block>>>(rgba_inner, d_output, width, height-dim_kernel, radius, d_space_weight, d_color_weight, dim_kernel);
     
-    bilateral_u8_gray<<<grid, block>>>(rgba_border1, d_output, width, width*dim_kernel, radius, d_space_weight, d_color_weight, dim_kernel);
+    //ilateral_u8_gray<<<grid, block>>>(rgba_border1, d_output, width, width*dim_kernel, radius, d_space_weight, d_color_weight, dim_kernel);
 
-    bilateral_u8_gray<<<grid, block>>>(rgba_inner_end, d_output, width, width*dim_kernel-1, radius, d_space_weight, d_color_weight, dim_kernel);
+    //bilateral_u8_gray<<<grid, block>>>(rgba_inner_end, d_output, width, width*dim_kernel-1, radius, d_space_weight, d_color_weight, dim_kernel);
     
     // ========== Salvataggio immagini ==========
 
