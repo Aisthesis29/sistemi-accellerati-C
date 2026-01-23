@@ -87,12 +87,10 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
         xn = min(x+radius, width-1);
         int i=0, bordo = 0;
         
-        if(y<=radius || (y+radius)>=height) {
-            bordo = 1;
-        }
-        const int condition1_bordo=y*(1-bordo);
+        
+        
         float w,w_s;
-        for (int dy = y0; dy < condition1_bordo; ++dy) {
+        for (int dy = y0; dy < y; ++dy) {
             
 
             for (int dx = x0; dx <= xn; ++dx) {
@@ -150,8 +148,8 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
               //wsum=0;
              
         }
-        const int condition2_bordo=xn*(1-bordo);
-        for(int dx=x0; dx<=condition2_bordo; dx++) {
+        
+        for(int dx=x0; dx<=xn; dx++) {
             int idx = y * width + dx;
             uchar4 val = rgba[idx];
             int val_r = (int)val.x;
@@ -166,29 +164,6 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
             sum_g = fmaf(w, val_g, sum_g);  //sum_g += w * val_g;
             sum_b = fmaf(w, val_b, sum_b);  //sum_b += w * val_b;
             
-        }
-        const int cond_bordo=yn*bordo; 
-
-        for (int dy = y0; dy <= cond_bordo; ++dy) {
-            for (int dx = x0; dx <= xn; ++dx) {
-                int idx = dy * width + dx;
-
-             /*   if(y==10&&x==2){
-                    printf("    CIAO DA BORDO=%d",dim_kernel);
-                }*/
-                uchar4 val = rgba[idx];
-                int val_r = (int)val.x;
-                int val_g = (int)val.y;
-                int val_b = (int)val.z;
-
-                int dr  = abs(val_r - center_r)+abs(val_g - center_g)+abs(val_b - center_b);
-                float w = space_weight[(dx-x+radius)*dim_kernel+(dy-y+radius)] * color_weight[dr];
-
-                wsum += w;
-                sum_r = fmaf(w, val_r, sum_r);  //sum_r += w * val_r;
-                sum_g = fmaf(w, val_g, sum_g);  //sum_g += w * val_g;
-                sum_b = fmaf(w, val_b, sum_b);  //sum_b += w * val_b;
-            }
         }
         float inv_Wsum = 1.f/wsum;
         out[idx0*3] = (unsigned char)(sum_r*inv_Wsum+0.5f);
@@ -419,7 +394,7 @@ int main(int argc, char **argv) {
     bilateral_u8_gray_border1<<<grid, block>>>(rgba_inner_end, d_output, width, width*dim_kernel, radius, d_space_weight, d_color_weight, dim_kernel);
     
     // ========== Salvataggio immagini ==========
-    
+
     CHECK(cudaMemcpy(h_output, d_output, imageSize, cudaMemcpyDeviceToHost));
     //CHECK(cudaMemcpy(d_output, h_output, imageSize, cudaMemcpyDeviceToHost));
     CHECK(cudaGetLastError());
