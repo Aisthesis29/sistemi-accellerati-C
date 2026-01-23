@@ -489,7 +489,8 @@ unsigned char *out_last=d_output+(3*width*height)-(3*width*dim_kernel);
 unsigned char *out_inner=d_output+3*(width)*dim_kernel;
 
 //inner
-int inner_rows=height-(dim_kernel);
+//int inner_rows=height-(dim_kernel); //usa solo questo con 2 kernel totali (up+middle)
+int inner_rows=height-(dim_kernel*2); //usa questo per 3 kernel (up+mid+bottom)
     dim3 grid_inner((width + block.x - 1) / block.x, (inner_rows + block.y - 1) / block.y);
 
 bilateral_u8_gray<<<grid_inner, block>>>(rgba, out_first, width,height,dim_kernel,inner_rows, radius, d_space_weight, d_color_weight, dim_kernel);
@@ -519,6 +520,15 @@ bilateral_u8_gray_unopt_ybase<<<grid_row_ALT, block>>>(
     dim_kernel
 );*/
 //last row
+bilateral_u8_gray_unopt_ybase<<<grid_row, block>>>(
+    rgba, out_first,                 // base pointers (immagine intera)
+    width, height,                  // DIMENSIONI REALI
+    rows+inner_rows, rows,                           // y_base=0, rows=1  -> solo prima riga
+    radius,
+    d_space_weight, d_color_weight,
+    dim_kernel
+);
+
 //bilateral_u8_gray_unopt<<<grid, block>>>(last_row_start, out_last, width, 1, radius, d_space_weight, d_color_weight, dim_kernel);
 /*bilateral_u8_gray_unopt_ybase<<<grid_row, block>>>(
     rgba, d_output, width, height,
