@@ -482,7 +482,7 @@ uchar4 *first_row_end=rgba+width*dim_kernel;//non serve fare *3 perchè è uchar
 uchar4 *last_row_start=rgba+(width*height)-(width);
 
 unsigned char *out_first=d_output;
-unsigned char *out_last=d_output+(3*width*height)-(3*width);
+unsigned char *out_last=d_output+(3*width*height)-(3*width*dim_kernel);
 unsigned char *out_inner=d_output+3*(width)*dim_kernel;
 
 //inner
@@ -504,7 +504,7 @@ bilateral_u8_gray_unopt_ybase<<<grid_row, block>>>(
 //last row
 //bilateral_u8_gray_unopt<<<grid, block>>>(last_row_start, out_last, width, 1, radius, d_space_weight, d_color_weight, dim_kernel);
 bilateral_u8_gray_unopt_ybase<<<grid_row, block>>>(
-    rgba, d_output, width, height,
+    rgba, out_last, width, height,
     height-dim_kernel, dim_kernel,
     radius, d_space_weight, d_color_weight, dim_kernel); 
 // ========== Salvataggio immagini ==========
