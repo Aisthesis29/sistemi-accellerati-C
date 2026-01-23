@@ -483,7 +483,7 @@ uchar4 *last_row_start=rgba+(width*height)-(width);
 
 unsigned char *out_first=d_output;
 unsigned char *out_last=d_output+(3*width*height)-(3*width);
-unsigned char *out_inner=d_output+3*(width);
+unsigned char *out_inner=d_output+3*(width)*dim_kernel;
 
 //inner
 bilateral_u8_gray<<<grid, block>>>(first_row_end, out_inner, width, height-dim_kernel, radius, d_space_weight, d_color_weight, dim_kernel);
