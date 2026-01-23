@@ -492,7 +492,7 @@ unsigned char *out_inner=d_output+3*(width)*dim_kernel;
 //bilateral_u8_gray_unopt<<<grid, block>>>(rgba, out_first, width, 1, radius, d_space_weight, d_color_weight, dim_kernel);
 //dim3 block(blockSize, blockSize);
 dim3 grid_row((width + block.x - 1)/block.x,(dim_kernel + block.y - 1)/block.y);
-bilateral_u8_gray_unopt_ybase<<<grid_row, block>>>(
+bilateral_u8_gray_unopt_ybase<<<grid, block>>>(
     rgba, out_first,                 // base pointers (immagine intera)
     width, height,                  // DIMENSIONI REALI
     0, height,                           // y_base=0, rows=1  -> solo prima riga
