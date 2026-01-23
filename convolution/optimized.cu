@@ -486,7 +486,7 @@ unsigned char *out_last=d_output+(3*width*height)-(3*width*dim_kernel);
 unsigned char *out_inner=d_output+3*(width)*dim_kernel;
 
 //inner
-int inner_rows=height-(dim_kernel+1)
+int inner_rows=height-(dim_kernel)
     dim3 grid_inner((width + block.x - 1) / block.x, (inner_rows + block.y - 1) / block.y);
 
 bilateral_u8_gray<<<grid, block>>>(first_row_end, out_inner, width,inner_rows, radius, d_space_weight, d_color_weight, dim_kernel);
