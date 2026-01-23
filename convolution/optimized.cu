@@ -486,7 +486,7 @@ unsigned char *out_last=d_output+(3*width*height)-(3*width*dim_kernel);
 unsigned char *out_inner=d_output+3*(width)*dim_kernel;
 
 //inner
-bilateral_u8_gray<<<grid, block>>>(first_row_end, out_inner, width, height-(dim_kernel+1), radius, d_space_weight, d_color_weight, dim_kernel);
+//bilateral_u8_gray<<<grid, block>>>(first_row_end, out_inner, width, height-(dim_kernel+1), radius, d_space_weight, d_color_weight, dim_kernel);
 
 //first row
 //bilateral_u8_gray_unopt<<<grid, block>>>(rgba, out_first, width, 1, radius, d_space_weight, d_color_weight, dim_kernel);
@@ -495,7 +495,7 @@ dim3 grid_row((width + block.x - 1)/block.x,(dim_kernel + block.y - 1)/block.y);
 bilateral_u8_gray_unopt_ybase<<<grid_row, block>>>(
     rgba, out_first,                 // base pointers (immagine intera)
     width, height,                  // DIMENSIONI REALI
-    0, dim_kernel+1,                           // y_base=0, rows=1  -> solo prima riga
+    0, height,                           // y_base=0, rows=1  -> solo prima riga
     radius,
     d_space_weight, d_color_weight,
     dim_kernel
@@ -503,10 +503,10 @@ bilateral_u8_gray_unopt_ybase<<<grid_row, block>>>(
 
 //last row
 //bilateral_u8_gray_unopt<<<grid, block>>>(last_row_start, out_last, width, 1, radius, d_space_weight, d_color_weight, dim_kernel);
-bilateral_u8_gray_unopt_ybase<<<grid_row, block>>>(
+/*bilateral_u8_gray_unopt_ybase<<<grid_row, block>>>(
     rgba, d_output, width, height,
     height-(dim_kernel+1), dim_kernel+1,
-    radius, d_space_weight, d_color_weight, dim_kernel); 
+    radius, d_space_weight, d_color_weight, dim_kernel); */
 // ========== Salvataggio immagini ==========
     
     CHECK(cudaMemcpy(h_output, d_output, imageSize, cudaMemcpyDeviceToHost));
