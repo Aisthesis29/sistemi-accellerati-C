@@ -376,7 +376,7 @@ int main(int argc, char **argv) {
 
     dim3 block(blockSize, blockSize);
     dim3 grid((width + block.x - 1) / block.x, (height + block.y - 1) / block.y);
-    // ========== Operazione reali ==========
+    // ========== Operazioni reali ==========
     memory_bella<<<grid, block>>>(d_input, rgba, width, height);
     int ds2;
     float space_weight[dim_kernel][dim_kernel];
@@ -405,9 +405,21 @@ int main(int argc, char **argv) {
 
     CHECK(cudaMalloc((void**)&d_color_weight, sizeof(float)*cn*256));
     CHECK(cudaMemcpy(d_color_weight, color_weight, sizeof(float)*cn*256, cudaMemcpyHostToDevice));
-    bilateral_u8_gray<<<grid, block>>>(rgba, d_output, width, height, radius, d_space_weight, d_color_weight, dim_kernel);
 
+    uchar4 *rgba_inner=rgba+(width*dim_kernel); //rappresenta il punto di partenza dell'inner. forse serve fare un +1
+
+    uchar4 *rgba_border1=rgba; //il primo bordo inizia da rgba, finisce a width*dim_kernel
+
+    uchar4 *rgba_inner_end= rgba+(width*height)-(width*dim_kernel); //puntatore che punta alla fine del inner end
+    //bilateral_u8_gray<<<grid, block>>>(rgba, d_output, width, height, radius, d_space_weight, d_color_weight, dim_kernel);
+    bilateral_u8_gray<<<grid, block>>>(rgba_inner, d_output, width, height-dim_kernel, radius, d_space_weight, d_color_weight, dim_kernel);
+    
+    bilateral_u8_gray_border<<<grid, block>>>(rgba_border1, d_output, width, width*dim_kernel, radius, d_space_weight, d_color_weight, dim_kernel);
+
+    bilateral_u8_gray_border1<<<grid, block>>>(rgba_inner_end, d_output, width, width*dim_kernel, radius, d_space_weight, d_color_weight, dim_kernel);
+    
     // ========== Salvataggio immagini ==========
+    
     CHECK(cudaMemcpy(h_output, d_output, imageSize, cudaMemcpyDeviceToHost));
     //CHECK(cudaMemcpy(d_output, h_output, imageSize, cudaMemcpyDeviceToHost));
     CHECK(cudaGetLastError());
