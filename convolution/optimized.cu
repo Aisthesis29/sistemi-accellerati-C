@@ -503,7 +503,7 @@ bilateral_u8_gray_unopt_ybase<<<grid_row, block>>>(
     dim_kernel
 );
 dim3 grid_row_ALT((width + block.x - 1) / block.x,
-              (rows-1  + block.y - 1) / block.y);
+              ((rows-1)  + block.y - 1) / block.y);
 bilateral_u8_gray_unopt_ybase<<<grid_row_ALT, block>>>(
     rgba, out_first,                 // base pointers (immagine intera)
     width, height,                  // DIMENSIONI REALI
