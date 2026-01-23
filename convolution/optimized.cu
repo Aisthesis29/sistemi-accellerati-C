@@ -485,7 +485,7 @@ bilateral_u8_gray<<<grid, block>>>(first_row_end, out_inner, width, height-2, ra
 //first row
 bilateral_u8_gray_unopt<<<grid, block>>>(rgba, out_first, width, 1, radius, d_space_weight, d_color_weight, dim_kernel);
 //last row
-bilateral_u8_gray_unopt<<<grid, block>>>(last_row_start, out_inner, width, 1, radius, d_space_weight, d_color_weight, dim_kernel);
+bilateral_u8_gray_unopt<<<grid, block>>>(last_row_start, out_last, width, 1, radius, d_space_weight, d_color_weight, dim_kernel);
     // ========== Salvataggio immagini ==========
     
     CHECK(cudaMemcpy(h_output, d_output, imageSize, cudaMemcpyDeviceToHost));
