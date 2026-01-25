@@ -103,7 +103,7 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
         float w,w_s;
         for (int dy = y-radius; dy < y; ++dy) {
             for (int dx = x0; dx <= xn; ++dx) {
-                int idxUpp = fmaf(dy,width,dx);//dy*width+dx;
+                int idxUpp = dy*width+dx;
                 int idxDown = (dy+dim_kernel-1-2*(i))*width+dx;
 
                 uchar4 valUpp = rgba[idxUpp];
