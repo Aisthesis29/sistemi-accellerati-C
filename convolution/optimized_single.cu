@@ -144,7 +144,9 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
             int val_g = (int)val.y;
             int val_b = (int)val.z;
 
-            int dr  = abs(val_r - center_r)+abs(val_g - center_g)+abs(val_b - center_b);
+            int dr = __sad(val_r, center_r,
+         __sad(val_g, center_g,
+               abs(val_b - center_b)));
             float w = space_weight[(dx-x+radius)*dim_kernel+radius] * color_weight[dr];
 
             wsum += w;
@@ -168,7 +170,9 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
                 int val_g = (int)val.y;
                 int val_b = (int)val.z;
 
-                int dr  = abs(val_r - center_r)+abs(val_g - center_g)+abs(val_b - center_b);
+                int dr = __sad(val_r, center_r,
+         __sad(val_g, center_g,
+               abs(val_b - center_b)));
                 float w = space_weight[(dx-x+radius)*dim_kernel+(dy-y_local+radius)] * color_weight[dr];
 
                 wsum += w;
@@ -194,7 +198,9 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
                 int val_g = (int)val.y;
                 int val_b = (int)val.z;
 
-                int dr  = abs(val_r - center_r)+abs(val_g - center_g)+abs(val_b - center_b);
+               int dr = __sad(val_r, center_r,
+         __sad(val_g, center_g,
+               abs(val_b - center_b)));
                 float w = space_weight[(dx-x+radius)*dim_kernel+(dy-y+radius)] * color_weight[dr];
 
                 wsum += w;
