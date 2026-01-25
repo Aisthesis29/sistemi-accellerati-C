@@ -345,7 +345,7 @@ void bilateral_u8_gray_cpu(unsigned char *h_input, unsigned char *out, int width
 }
 
 int main(int argc, char **argv) {
-    if (argc < 5) {
+    if (argc < 7) {
         printf("Usage: %s <frame_pattern> <kernel_size> <sigma_s> <sigma_r>\n", argv[0]);
         printf("kernel_size: dimensione matrice di convoluzione, intero dispari\n");
         printf("sigma_s: parametro relativo allo spazio, intero positivo\n");
