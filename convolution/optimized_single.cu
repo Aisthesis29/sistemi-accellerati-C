@@ -77,8 +77,8 @@ bool verifyResults(unsigned char* cpu_result, unsigned char* gpu_result, int siz
 }
 
 __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, int height,int borders,int rows, int radius, float *color_weight, int dim_kernel) {
-    int x = blockIdx.x * blockDim.x + threadIdx.x;
-    int y_local = blockIdx.y * blockDim.y + threadIdx.y;
+    int x = fmaf(blockIdx.x,blockDim.x,threadIdx.x);//blockIdx.x * blockDim.x + threadIdx.x;
+    int y_local = fmaf(blockIdx.y, blockDim.y, threadIdx.y);//blockIdx.y * blockDim.y + threadIdx.y;
         
     if (x >= width || y_local >= height) return;
     int x0, xn, idx0;
@@ -92,7 +92,7 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
 
     if(y_local >= borders) {
         int y = y_local - radius;
-        idx0 = y * width + x;
+        idx0 = fmaf(y,width,x);//y * width + x;
 
         uchar4 pixel = rgba[idx0];
         int center_r = (int)pixel.x;
@@ -103,7 +103,7 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
         float w,w_s;
         for (int dy = y-radius; dy < y; ++dy) {
             for (int dx = x0; dx <= xn; ++dx) {
-                int idxUpp = dy*width+dx;
+                int idxUpp = fmaf(dy,width,dx);//dy*width+dx;
                 int idxDown = (dy+dim_kernel-1-2*(i))*width+dx;
 
                 uchar4 valUpp = rgba[idxUpp];
