@@ -395,7 +395,7 @@ int main(int argc, char **argv) {
 
     CHECK(cudaMemcpy(d_input, h_input,  imageSize, cudaMemcpyHostToDevice)); //match anche qui
 
-    dim3 block(32, blockSize);
+    dim3 block(32, 8);
     dim3 grid((width + block.x - 1) / block.x, (height + block.y - 1) / block.y);
     // ========== Operazioni reali ==========
     memory_bella<<<grid, block>>>(d_input, rgba, width, height);
