@@ -174,9 +174,9 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
             }
         }
     } else {
+        int y = rows + y_local + radius;  
         if(x<10)
-            printf("rows: %d\n", rows);
-        int y = rows + y_local + radius;               // y globale
+            printf("rows: %d, y_local: %d, y: %d\n", rows, y_local, y);             
         idx0 = y * width +x;
         uchar4 pixel = rgba[idx0];
         int center_r = (int)pixel.x;
