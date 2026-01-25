@@ -174,17 +174,12 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
             }
         }
     } else {
-        int y = rows + y_local;  
-        if(x<10)
-            printf("rows: %d, y_local: %d, y: %d\n", rows, y_local, y);             
+        int y = rows + y_local;            
         idx0 = y * width +x;
         uchar4 pixel = rgba[idx0];
         int center_r = (int)pixel.x;
         int center_g = (int)pixel.y;
         int center_b = (int)pixel.z;
-        if(x==3) {
-            printf("idx0:%d, center: %d, %d, %d\n", idx0, center_r, center_g, center_b);
-        }
 
         for (int dy = y-radius; dy <= height-1; ++dy) {
             for (int dx = x0; dx <= xn; ++dx) {
@@ -202,10 +197,6 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
                 sum_r = fmaf(w, val_r, sum_r);  //sum_r += w * val_r;
                 sum_g = fmaf(w, val_g, sum_g);  //sum_g += w * val_g;
                 sum_b = fmaf(w, val_b, sum_b);  //sum_b += w * val_b;
-                /*if(x==3) {
-                    printf("dx: %d, dy: %d, idx: %d\n")
-                    dr: %d, w: %f\n
-                }*/
             }
         }
     }
