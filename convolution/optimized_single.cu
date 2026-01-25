@@ -174,7 +174,7 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
             }
         }
     } else {
-        int y = rows + y_local + radius;  
+        int y = rows + y_local;  
         if(x<10)
             printf("rows: %d, y_local: %d, y: %d\n", rows, y_local, y);             
         idx0 = y * width +x;
