@@ -166,7 +166,7 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
     float sum_g = 0.0f;
     float sum_b = 0.0f;
 
-    if(y_local > borders) {
+    if(y_local >= borders) {
         int y = y_local - radius;
         idx0 = y * width + x;
 
