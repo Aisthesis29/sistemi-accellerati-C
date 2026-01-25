@@ -374,7 +374,7 @@ int main(int argc, char **argv) {
     bilateral_u8_gray<<<grid_inner, block>>>(rgba, d_output, width,height,radius,inner_rows, radius, d_color_weight, dim_kernel);
     int rows =radius;
     dim3 grid_row((width + block.x - 1) / block.x,
-                (rows  + block.y - 1) / block.y);
+                (2 * rows  + block.y - 1) / block.y);   //2* per considerare che ora fa sopra e sotto (2* thread necessari)
     bilateral_u8_gray_unopt_ybase<<<grid_row, block>>>(
         rgba, d_output,                 // base pointers (immagine intera)
         width, height,                  // DIMENSIONI REALI
