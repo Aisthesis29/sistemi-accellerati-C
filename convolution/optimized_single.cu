@@ -356,6 +356,8 @@ int main(int argc, char **argv) {
     int dim_kernel = atoi(argv[2]);
     int sigma_s = atoi(argv[3]);
     int  sigma_r = atoi(argv[4]);
+    int block_x = atoi(argv[5]);
+    int block_y = atoi(argv[6]);
     if(dim_kernel%2==0 || dim_kernel<1) {
         printf("kernel_size: valore non valido. Deve essere un intero positivo dispari\n");
         return 2;
@@ -395,7 +397,7 @@ int main(int argc, char **argv) {
 
     CHECK(cudaMemcpy(d_input, h_input,  imageSize, cudaMemcpyHostToDevice)); //match anche qui
 
-    dim3 block(32, 8);
+    dim3 block(block_x, block_y);
     dim3 grid((width + block.x - 1) / block.x, (height + block.y - 1) / block.y);
     // ========== Operazioni reali ==========
     memory_bella<<<grid, block>>>(d_input, rgba, width, height);
