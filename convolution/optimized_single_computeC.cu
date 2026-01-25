@@ -76,7 +76,7 @@ bool verifyResults(unsigned char* cpu_result, unsigned char* gpu_result, int siz
     return grave_errors == 0;
 }
 
-__global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, int height,int borders,int rows, int radius, float *color_weight, int dim_kernel) {
+__global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, int height,int borders,int rows, int radius, float inv_2_sigma_r2, int dim_kernel) {
     int x = blockIdx.x * blockDim.x + threadIdx.x;
     int y_local = blockIdx.y * blockDim.y + threadIdx.y;
         
@@ -362,7 +362,7 @@ int main(int argc, char **argv) {
     int inner_rows=height-(2*radius);
     dim3 grid_inner((width + block.x - 1) / block.x, (inner_rows + block.y - 1) / block.y);
 
-    bilateral_u8_gray<<<grid, block>>>(rgba, d_output, width,height,2*radius,inner_rows, radius, d_color_weight, dim_kernel);
+    bilateral_u8_gray<<<grid, block>>>(rgba, d_output, width,height,2*radius,inner_rows, radius, inv_2_sigma_r2, dim_kernel);
     /*int rows =radius;
     dim3 grid_row((width + block.x - 1) / block.x,
                 (2 * rows  + block.y - 1) / block.y);   //2* per considerare che ora fa sopra e sotto (2* thread necessari)
