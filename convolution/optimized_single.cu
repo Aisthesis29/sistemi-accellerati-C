@@ -61,7 +61,7 @@ bool verifyResults(unsigned char* cpu_result, unsigned char* gpu_result, int siz
             if(diff>=2){
                 grave_errors++;
             }
-            if (errors < 20 && diff>1) {
+            if (grave_errors<20 && diff>1) {
                 printf("Mismatch at index %d: CPU=%d, %s=%d (diff=%d)\n", 
                         i, cpu_result[i], label, gpu_result[i], diff);
             }
