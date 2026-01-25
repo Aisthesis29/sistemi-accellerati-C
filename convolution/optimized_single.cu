@@ -77,8 +77,8 @@ bool verifyResults(unsigned char* cpu_result, unsigned char* gpu_result, int siz
 }
 
 __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, int height,int borders,int rows, int radius, float *color_weight, int dim_kernel) {
-    int x = fmaf(blockIdx.x,blockDim.x,threadIdx.x);//blockIdx.x * blockDim.x + threadIdx.x;
-    int y_local = fmaf(blockIdx.y, blockDim.y, threadIdx.y);//blockIdx.y * blockDim.y + threadIdx.y;
+    int x = blockIdx.x * blockDim.x + threadIdx.x;
+    int y_local = blockIdx.y * blockDim.y + threadIdx.y;
         
     if (x >= width || y_local >= height) return;
     int x0, xn, idx0;
