@@ -92,7 +92,7 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
 
     if(y_local >= borders) {
         int y = y_local - radius;
-        idx0 = fmaf(y,width,x);//y * width + x;
+        idx0 = y * width + x;
 
         uchar4 pixel = rgba[idx0];
         int center_r = (int)pixel.x;
