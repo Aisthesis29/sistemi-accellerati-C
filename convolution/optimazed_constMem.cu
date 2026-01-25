@@ -5,7 +5,7 @@
 #include <time.h>
 #include <stdint.h>
 #include <math.h>
-//test
+
 // Include STB image libraries
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
@@ -179,8 +179,6 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
         for (int dx = x0; dx <= xn; ++dx) {
             int idxUpp = dy*width+dx;
             int idxDown = (dy+dim_kernel-1-2*(i))*width+dx;
-            //int dy_mirror = 2*y - dy; // se dy<y, allora dy_mirror>y 
-            //int idxDown = dy_mirror * width + dx; //##################################################QUIII  
 
             uchar4 valUpp = rgba[idxUpp];
             int val_rU = (int)valUpp.x;
@@ -370,25 +368,24 @@ int main(int argc, char **argv) {
     CHECK(cudaMalloc((void**)&d_color_weight, sizeof(float)*cn*256));
     CHECK(cudaMemcpy(d_color_weight, color_weight, sizeof(float)*cn*256, cudaMemcpyHostToDevice));
 
-int inner_rows=height-(2*radius);
-dim3 grid_inner((width + block.x - 1) / block.x, (inner_rows + block.y - 1) / block.y);
+    int inner_rows=height-(2*radius);
+    dim3 grid_inner((width + block.x - 1) / block.x, (inner_rows + block.y - 1) / block.y);
 
-bilateral_u8_gray<<<grid_inner, block>>>(rgba, d_output, width,height,radius,inner_rows, radius, d_color_weight, dim_kernel);
-int rows =radius;
-dim3 grid_row((width + block.x - 1) / block.x,
-              (rows  + block.y - 1) / block.y);
-bilateral_u8_gray_unopt_ybase<<<grid_row, block>>>(
-    rgba, d_output,                 // base pointers (immagine intera)
-    width, height,                  // DIMENSIONI REALI
-    rows+inner_rows, 2*radius,                           // y_base=0, rows=1  -> solo prima riga
-    radius,
-    d_color_weight,
-    dim_kernel
-);
-// ========== Salvataggio immagini ==========
+    bilateral_u8_gray<<<grid_inner, block>>>(rgba, d_output, width,height,radius,inner_rows, radius, d_color_weight, dim_kernel);
+    int rows =radius;
+    dim3 grid_row((width + block.x - 1) / block.x,
+                (rows  + block.y - 1) / block.y);
+    bilateral_u8_gray_unopt_ybase<<<grid_row, block>>>(
+        rgba, d_output,                 // base pointers (immagine intera)
+        width, height,                  // DIMENSIONI REALI
+        rows+inner_rows, 2*radius,                           // y_base=0, rows=1  -> solo prima riga
+        radius,
+        d_color_weight,
+        dim_kernel
+    );
+    // ========== Salvataggio immagini ==========
     
     CHECK(cudaMemcpy(h_output, d_output, imageSize, cudaMemcpyDeviceToHost));
-    //CHECK(cudaMemcpy(d_output, h_output, imageSize, cudaMemcpyDeviceToHost));
     CHECK(cudaGetLastError());
     CHECK(cudaDeviceSynchronize());
     stbi_write_png("risultato.png", width, height, channels, h_output, width * channels);
