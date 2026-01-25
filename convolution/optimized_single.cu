@@ -61,7 +61,7 @@ bool verifyResults(unsigned char* cpu_result, unsigned char* gpu_result, int siz
             if(diff>=2){
                 grave_errors++;
             }
-            if (errors < 20) {
+            if (errors < 20 && diff>1) {
                 printf("Mismatch at index %d: CPU=%d, %s=%d (diff=%d)\n", 
                         i, cpu_result[i], label, gpu_result[i], diff);
             }
@@ -74,82 +74,6 @@ bool verifyResults(unsigned char* cpu_result, unsigned char* gpu_result, int siz
     }
     
     return grave_errors == 0;
-}
-
-__global__ void bilateral_u8_gray_unopt_ybase(
-    const uchar4 *rgba, unsigned char *out,
-    int width, int height,
-    int y_base, int rows,        // regione: [y_base, y_base+rows)
-    int radius, const float *color_weight, int dim_kernel)
-{
-    int x = blockIdx.x * blockDim.x + threadIdx.x;
-    int y_local = blockIdx.y * blockDim.y + threadIdx.y;
-
-    if (x >= width || y_local >= rows) return;
-    int x0, xn, idx0;
-    float wsum = 0.0f;
-    float sum_r = 0.0f;
-    float sum_g = 0.0f;
-    float sum_b = 0.0f;
-
-    x0 = max(x-radius, 0);
-    xn = min(x+radius, width-1);
-    if (x < width && y_local < radius) {
-        idx0 = y_local * width + x;
-        uchar4 pixel = rgba[idx0];
-        int center_r = (int)pixel.x;
-        int center_g = (int)pixel.y;
-        int center_b = (int)pixel.z;
-
-        for (int dy = 0; dy <= y_local+radius; ++dy) {
-            for (int dx = x0; dx <= xn; ++dx) {
-                int idx = dy * width + dx;
-
-                uchar4 val = rgba[idx];
-                int val_r = (int)val.x;
-                int val_g = (int)val.y;
-                int val_b = (int)val.z;
-
-                int dr  = abs(val_r - center_r)+abs(val_g - center_g)+abs(val_b - center_b);
-                float w = space_weight[(dx-x+radius)*dim_kernel+(dy-y_local+radius)] * color_weight[dr];
-
-                wsum += w;
-                sum_r = fmaf(w, val_r, sum_r);  //sum_r += w * val_r;
-                sum_g = fmaf(w, val_g, sum_g);  //sum_g += w * val_g;
-                sum_b = fmaf(w, val_b, sum_b);  //sum_b += w * val_b;
-            }
-        }
-    } else {
-        int y = y_base + (y_local-radius);               // y globale
-        idx0 = y * width +x;
-        uchar4 pixel = rgba[idx0];
-        int center_r = (int)pixel.x;
-        int center_g = (int)pixel.y;
-        int center_b = (int)pixel.z;
-
-        for (int dy = y-radius; dy <= height-1; ++dy) {
-            for (int dx = x0; dx <= xn; ++dx) {
-                int idx = dy * width + dx;
-
-                uchar4 val = rgba[idx];
-                int val_r = (int)val.x;
-                int val_g = (int)val.y;
-                int val_b = (int)val.z;
-
-                int dr  = abs(val_r - center_r)+abs(val_g - center_g)+abs(val_b - center_b);
-                float w = space_weight[(dx-x+radius)*dim_kernel+(dy-y+radius)] * color_weight[dr];
-
-                wsum += w;
-                sum_r = fmaf(w, val_r, sum_r);  //sum_r += w * val_r;
-                sum_g = fmaf(w, val_g, sum_g);  //sum_g += w * val_g;
-                sum_b = fmaf(w, val_b, sum_b);  //sum_b += w * val_b;
-            }
-        }
-    }
-    float inv_Wsum = 1.f/wsum;
-    out[idx0*3] = (unsigned char)(sum_r*inv_Wsum+0.5f);
-    out[idx0*3+1] = (unsigned char)(sum_g*inv_Wsum+0.5f);
-    out[idx0*3+2] = (unsigned char)(sum_b*inv_Wsum+0.5f);
 }
 
 __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, int height,int borders,int rows, int radius, float *color_weight, int dim_kernel) {
