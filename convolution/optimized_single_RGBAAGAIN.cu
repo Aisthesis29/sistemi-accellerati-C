@@ -367,8 +367,8 @@ int main(int argc, char **argv)
     dim3 block((unsigned)block_x, (unsigned)block_y);
     dim3 grid((unsigned)((width + block.x - 1) / block.x),
               (unsigned)((height + block.y - 1) / block.y));
-
-    bilateral_u8_gray<<<grid, block>>>(d_input, d_output,
+    uchar4 *rgba=d_input;
+    bilateral_u8_gray<<<grid, block>>>(rgba, d_output,
                                        width, height,
                                        2 * radius, inner_rows,
                                        radius, d_color_weight, dim_kernel);
