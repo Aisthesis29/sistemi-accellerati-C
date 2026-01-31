@@ -13,7 +13,7 @@
 #include "stb_image_write.h"
 #define DEBUG_IDX 12384
 #define DIM 45
-
+//mem. costante=8Kib, 45x45x4=8.100
 __constant__ float space_weight[DIM*DIM];
 
 static inline int min_cpu(int v1, int v2) {
