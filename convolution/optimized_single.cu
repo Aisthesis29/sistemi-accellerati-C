@@ -117,8 +117,9 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
 
                 w_s = space_weight[(dx-x+radius)*dim_kernel+(dy-y+radius)];
                 int dr = __sad(val_rU, center_r,
-         __sad(val_gU, center_g,
-               abs(val_bU - center_b)));
+          __sad(val_gU, center_g,
+               __sad(val_bU, center_b, 0)));
+
                 w = w_s * color_weight[dr];
                 wsum += w;
                 sum_r = fmaf(w, val_rU, sum_r);  //sum_r += w * val_r;
@@ -127,7 +128,7 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
 
                 int drD = __sad(val_rD, center_r,
          __sad(val_gD, center_g,
-               abs(val_bD - center_b)));
+                __sad(val_bD, center_b, 0)));
                 w = w_s * color_weight[drD];
                 wsum += w;
                 sum_r = fmaf(w, val_rD, sum_r);  //sum_r += w * val_r;
@@ -146,7 +147,7 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
 
             int dr = __sad(val_r, center_r,
          __sad(val_g, center_g,
-               abs(val_b - center_b)));
+                __sad(val_b, center_b, 0)));
             float w = space_weight[(dx-x+radius)*dim_kernel+radius] * color_weight[dr];
 
             wsum += w;
@@ -172,7 +173,7 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
 
                 int dr = __sad(val_r, center_r,
          __sad(val_g, center_g,
-               abs(val_b - center_b)));
+                __sad(val_b, center_b, 0)));
                 float w = space_weight[(dx-x+radius)*dim_kernel+(dy-y_local+radius)] * color_weight[dr];
 
                 wsum += w;
@@ -200,7 +201,7 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
 
                int dr = __sad(val_r, center_r,
          __sad(val_g, center_g,
-               abs(val_b - center_b)));
+                __sad(val_b, center_b, 0)));
                 float w = space_weight[(dx-x+radius)*dim_kernel+(dy-y+radius)] * color_weight[dr];
 
                 wsum += w;
