@@ -46,7 +46,7 @@ static inline int max_cpu(int v1, int v2) {
     } \
 }
 
-__global__ void bilateral_u8_gray(unsigned char *h_input, unsigned char *out, int width, int height, int radius, float* space_weight, float* color_weight) {
+__global__ void bilateral_u8_gray(unsigned char *h_input, unsigned char *out, int width, int height, int radius, float* space_weight, float* color_weight, int dim_kernel) {
     int x = blockIdx.x * blockDim.x + threadIdx.x;
     int y = blockIdx.y * blockDim.y + threadIdx.y;
 
@@ -79,10 +79,7 @@ __global__ void bilateral_u8_gray(unsigned char *h_input, unsigned char *out, in
                 int val_b = (int)h_input[idx*3+2];
 
                 int dr  = abs(val_r - center_r)+abs(val_g - center_g)+abs(val_b - center_b);
-                float w = space_weight[(dx-x+radius)*dim_kernel+(dy-y_local+radius)] * color_weight[dr];
-
-                const float w_s = expf(-ds2 * inv_2_sigma_s2);
-                const float w_r = expf(-dr2 * inv_2_sigma_r2);
+                float w = space_weight[(dx-x+radius)*dim_kernel+(dy-y+radius)] * color_weight[dr];
                 const float w   = w_s * w_r;
                 //if(idx0==DEBUG_IDX)
                     //printf("gpu w_r: %f w_s:%f,val=%d\n", w_r,w_s,val);
@@ -308,7 +305,7 @@ int main(int argc, char **argv) {
     dim3 block(32, 4);
     dim3 grid((width + block.x - 1) / block.x, (height + block.y - 1) / block.y);
     // ========== Operazione reali ==========
-    bilateral_u8_gray<<<grid, block>>>(d_input, d_output, width, height, radius, d_space_weight, d_color_weight);
+    bilateral_u8_gray<<<grid, block>>>(d_input, d_output, width, height, radius, d_space_weight, d_color_weight, dim_kernel);
 
     // ========== Salvataggio immagini ==========
     CHECK(cudaMemcpy(h_output, d_output, imageSize, cudaMemcpyDeviceToHost));
