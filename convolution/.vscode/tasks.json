@@ -8,9 +8,9 @@
                 "-fdiagnostics-color=always",
                 "-g",
                 "-w",
-                "${workspaceFolder}/optimaze_cpu.c",
+                "${workspaceFolder}/naive.c",
                 "-o",
-                "${fileDirname}/o1",
+                "${fileDirname}/naive",
                 "-lm",
                 "-O0"
             ],
