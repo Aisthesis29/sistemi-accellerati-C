@@ -50,7 +50,7 @@ __device__ __forceinline__ int clampi_dev(int v, int lo, int hi) {
     return (v < lo) ? lo : (v > hi) ? hi : v;
 }
 
-__global__ void memory_bella(unsigned char *h_input, uchar4* rgba, int width, int height) {
+__global__ void memory_alignment(unsigned char *h_input, uchar4* rgba, int width, int height) {
     int x = blockIdx.x * blockDim.x + threadIdx.x;
     int y = blockIdx.y * blockDim.y + threadIdx.y;
 
@@ -434,7 +434,7 @@ int main(int argc, char **argv) {
     dim3 block(blockSize, blockSize);
     dim3 grid((width + block.x - 1) / block.x, (height + block.y - 1) / block.y);
     // ========== Operazioni reali ==========
-    memory_bella<<<grid, block>>>(d_input, rgba, width, height);
+    memory_alignment<<<grid, block>>>(d_input, rgba, width, height);
     int ds2;
     float space_weight[dim_kernel][dim_kernel];
     const float inv_2_sigma_s2 = 1.0f / (2.0f * sigma_s * sigma_s);

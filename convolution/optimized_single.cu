@@ -34,7 +34,7 @@ static inline int max_cpu(int v1, int v2) {
     } \
 }
 
-__global__ void memory_bella(unsigned char *h_input, uchar4* rgba, int width, int height) {
+__global__ void memory_alignment(unsigned char *h_input, uchar4* rgba, int width, int height) {
     int x = blockIdx.x * blockDim.x + threadIdx.x;
     int y = blockIdx.y * blockDim.y + threadIdx.y;
 
@@ -329,13 +329,13 @@ int main(int argc, char **argv) {
     CHECK(cudaMalloc((void**)&d_input, imageSize));  //matchata al 4 della stbi_load in riga 269
     CHECK(cudaMalloc((void**)&rgba, width*height*4));
     CHECK(cudaMalloc((void**)&d_output, imageSize));
-
+//tempo 1
     CHECK(cudaMemcpy(d_input, h_input,  imageSize, cudaMemcpyHostToDevice)); //match anche qui
 
     dim3 block(block_x, block_y);
     dim3 grid((width + block.x - 1) / block.x, (height + block.y - 1) / block.y);
     // ========== Operazioni reali ==========
-    memory_bella<<<grid, block>>>(d_input, rgba, width, height);
+    memory_alignment<<<grid, block>>>(d_input, rgba, width, height);
     int ds2;
     const float inv_2_sigma_s2 = 1.0f / (2.0f * sigma_s * sigma_s);
     //space weight
@@ -380,6 +380,8 @@ int main(int argc, char **argv) {
     CHECK(cudaMemcpy(h_output, d_output, imageSize, cudaMemcpyDeviceToHost));
     CHECK(cudaGetLastError());
     CHECK(cudaDeviceSynchronize());
+//tempo 2
+
     stbi_write_png("risultato.png", width, height, channels, h_output, width * channels);
     printf("\nFinito bilateral gpu!!\n\n");
 

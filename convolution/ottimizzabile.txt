@@ -1,4 +1,4 @@
-memory_bella:
+memory_alignment:
 -scoreboard dependancy su L1 op.
 
 bilateral kernel:
