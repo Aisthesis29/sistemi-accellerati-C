@@ -80,7 +80,6 @@ __global__ void bilateral_u8_gray(unsigned char *h_input, unsigned char *out, in
 
                 int dr  = abs(val_r - center_r)+abs(val_g - center_g)+abs(val_b - center_b);
                 float w = space_weight[(dx-x+radius)*dim_kernel+(dy-y+radius)] * color_weight[dr];
-                const float w   = w_s * w_r;
                 //if(idx0==DEBUG_IDX)
                     //printf("gpu w_r: %f w_s:%f,val=%d\n", w_r,w_s,val);
 
