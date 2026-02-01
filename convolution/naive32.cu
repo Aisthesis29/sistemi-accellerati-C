@@ -46,7 +46,7 @@ static inline int max_cpu(int v1, int v2) {
     } \
 }
 
-__global__ void bilateral_u8_gray(unsigned char *h_input, unsigned char *out, int width, int height, int radius, int sigma_s, int sigma_r) {
+__global__ void bilateral_u8_gray(unsigned char *h_input, unsigned char *out, int width, int height, int radius, float* space_weight, float* color_weight) {
     int x = blockIdx.x * blockDim.x + threadIdx.x;
     int y = blockIdx.y * blockDim.y + threadIdx.y;
 
@@ -70,7 +70,6 @@ __global__ void bilateral_u8_gray(unsigned char *h_input, unsigned char *out, in
         x0 = max(x-radius, 0);
         xn = min(x+radius, width-1);
         for (int dy = y0; dy <= yn; ++dy) {
-            //const int yy = clampi(y + dy, 0, height - 1);
 
             for (int dx = x0; dx <= xn; ++dx) {
                 //const int xx = clampi(x + dx, 0, width - 1);
@@ -81,9 +80,8 @@ __global__ void bilateral_u8_gray(unsigned char *h_input, unsigned char *out, in
                 int val_g = (int)h_input[idx*3+1];
                 int val_b = (int)h_input[idx*3+2];
 
-                int ds2 = (dx-x) * (dx-x) + (dy-y) * (dy-y);
                 int dr  = abs(val_r - center_r)+abs(val_g - center_g)+abs(val_b - center_b);
-                int dr2 = dr * dr;
+                float w = space_weight[(dx-x+radius)*dim_kernel+(dy-y_local+radius)] * color_weight[dr];
 
                 const float w_s = expf(-ds2 * inv_2_sigma_s2);
                 const float w_r = expf(-dr2 * inv_2_sigma_r2);
@@ -281,10 +279,38 @@ int main(int argc, char **argv) {
 
     CHECK(cudaMemcpy(d_input, h_input, imageSize, cudaMemcpyHostToDevice));
 
+    int ds2;
+    float space_weight[dim_kernel][dim_kernel];
+    const float inv_2_sigma_s2 = 1.0f / (2.0f * sigma_s * sigma_s);
+    //space weight
+    for(int i=-radius; i<=radius; i++) {
+        for(int j=-radius; j<=radius; j++) {
+            ds2 = (i*i)+(j*j);
+            space_weight[i+radius][j+radius] = expf(-ds2 * inv_2_sigma_s2);
+        }
+    }
+    int convSize=(dim_kernel*dim_kernel)*sizeof(float);
+    float *d_space_weight;
+    CHECK(cudaMalloc((void**)&d_space_weight, convSize));
+    CHECK(cudaMemcpy(d_space_weight, space_weight, convSize, cudaMemcpyHostToDevice));
+
+    //color weight
+    const float inv_2_sigma_r2 = 1.0f / (2.0f * sigma_r * sigma_r);
+    const int cn=channels;
+    float color_weight[cn*256];
+    for( int i = 0; i < 256 * cn; i++ ){
+            color_weight[i] = expf(i * i * -inv_2_sigma_r2);
+            //printf("dr: %d, %f\n", i, color_weight[i]);
+    }
+    float *d_color_weight;
+
+    CHECK(cudaMalloc((void**)&d_color_weight, sizeof(float)*cn*256));
+    CHECK(cudaMemcpy(d_color_weight, color_weight, sizeof(float)*cn*256, cudaMemcpyHostToDevice));
+
     dim3 block(32, 4);
     dim3 grid((width + block.x - 1) / block.x, (height + block.y - 1) / block.y);
     // ========== Operazione reali ==========
-    bilateral_u8_gray<<<grid, block>>>(d_input, d_output, width, height, radius, sigma_s, sigma_r);
+    bilateral_u8_gray<<<grid, block>>>(d_input, d_output, width, height, radius, d_space_weight, d_color_weight);
 
     // ========== Salvataggio immagini ==========
     CHECK(cudaMemcpy(h_output, d_output, imageSize, cudaMemcpyDeviceToHost));
