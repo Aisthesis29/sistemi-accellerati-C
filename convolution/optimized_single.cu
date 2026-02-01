@@ -110,7 +110,10 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
                 int val_rU = (int)valUpp.x;
                 int val_gU = (int)valUpp.y;
                 int val_bU = (int)valUpp.z;
-                
+                uchar4 valDown = rgba[idxDown];
+                int val_rD = (int)valDown.x;
+                int val_gD = (int)valDown.y;
+                int val_bD = (int)valDown.z;
 
                 w_s = space_weight[(dx-x+radius)*dim_kernel+(dy-y+radius)];
                 int dr = __sad(val_rU, center_r,
@@ -122,12 +125,6 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
                 sum_r = fmaf(w, val_rU, sum_r);  //sum_r += w * val_r;
                 sum_g = fmaf(w, val_gU, sum_g);  //sum_g += w * val_g;
                 sum_b = fmaf(w, val_bU, sum_b);  //sum_b += w * val_b;
-
-                uchar4 valDown = rgba[idxDown];
-                int val_rD = (int)valDown.x;
-                int val_gD = (int)valDown.y;
-                int val_bD = (int)valDown.z;
-
 
                 int drD = __sad(val_rD, center_r,
          __sad(val_gD, center_g,
