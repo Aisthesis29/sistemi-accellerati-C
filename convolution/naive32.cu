@@ -51,8 +51,6 @@ __global__ void bilateral_u8_gray(unsigned char *h_input, unsigned char *out, in
     int y = blockIdx.y * blockDim.y + threadIdx.y;
 
     int y0, yn, x0, xn;
-    const float inv_2_sigma_s2 = 1.0f / (2.0f * sigma_s * sigma_s);
-    const float inv_2_sigma_r2 = 1.0f / (2.0f * sigma_r * sigma_r);
         
     if (x < width && y < height) {
         const int idx0 = y * width + x;
