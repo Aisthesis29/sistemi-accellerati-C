@@ -10,7 +10,12 @@
 #include "stb_image.h"
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
-
+#include <time.h>
+double cpuSecond() {
+ struct timespec ts;
+ timespec_get(&ts, TIME_UTC);
+ return ((double)ts.tv_sec + (double)ts.tv_nsec * 1.e-9);
+}
 static inline int clampi(int v, int lo, int hi) {
     return (v < lo) ? lo : (v > hi) ? hi : v;
 }
@@ -165,11 +170,15 @@ int main(int argc, char **argv) {
     grayscale_cpu(h_input, in, width, height);
     printf("Finito greyscale\n");
     stbi_write_png("grayscale.png", width, height, 1, in, width);*/
+        double start=cpuSecond();
+
     bilateral_u8_gray(h_input, h_output, width, height, radius, sigma_s, sigma_r);
-    
-    for(int i=0; i<150; i++) {
-        printf("id: %d, CPU: %d\n", i, h_output[i]);
-    }
+            double end=cpuSecond();
+
+    //for(int i=0; i<150; i++) {
+      //  printf("id: %d, CPU: %d\n", i, h_output[i]);
+   // }
+    printf("TEMPI:%.9f",end-start);
     // ========== Salvataggio immagini ==========
     stbi_write_png("risultato.png", width, height, channels, h_output, width * channels);
 

@@ -7,6 +7,12 @@
 #include <math.h>
 //test
 // Include STB image libraries
+#include <time.h>
+double cpuSecond() {
+ struct timespec ts;
+ timespec_get(&ts, TIME_UTC);
+ return ((double)ts.tv_sec + (double)ts.tv_nsec * 1.e-9);
+}
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 #define STB_IMAGE_WRITE_IMPLEMENTATION
@@ -274,6 +280,7 @@ int main(int argc, char **argv) {
     int imageSize = width * height * channels;
     unsigned char* h_output = (unsigned char*)malloc(imageSize);
 
+    double start=cpuSecond();
     // ========== Allocazione device ==========
     unsigned char *d_output, *d_input;
     CHECK(cudaMalloc((void**)&d_input, imageSize));
@@ -291,8 +298,11 @@ int main(int argc, char **argv) {
     //CHECK(cudaMemcpy(d_output, h_output, imageSize, cudaMemcpyDeviceToHost));
     CHECK(cudaGetLastError());
     CHECK(cudaDeviceSynchronize());
+
+        double end=cpuSecond();
     stbi_write_png("risultato.png", width, height, channels, h_output, width * channels);
     printf("Finito bilateral gpu!!\n");
+    printf("TEMPI:%.9f",end-start);
 
     //Parte CPU + controllo
     /*unsigned char* h_output_cpu = (unsigned char*)malloc(imageSize);
