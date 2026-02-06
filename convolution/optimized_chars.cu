@@ -95,9 +95,9 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
         idx0 = y * width + x;
 
         uchar4 pixel = rgba[idx0];
-        char center_r = (int)pixel.x;
-        int center_g = (int)pixel.y;
-        int center_b = (int)pixel.z;
+        unsigned char center_r = pixel.x;
+        unsigned char center_g = pixel.y;
+        unsigned char center_b = pixel.z;
         
         int i=0;
         float w,w_s;
@@ -107,13 +107,13 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
                 int idxDown = (dy+dim_kernel-1-2*(i))*width+dx;
 
                 uchar4 valUpp = rgba[idxUpp];
-                int val_rU = (int)valUpp.x;
-                int val_gU = (int)valUpp.y;
-                int val_bU = (int)valUpp.z;
+                unsigned char val_rU = valUpp.x;
+                unsigned char val_gU = valUpp.y;
+                unsigned char val_bU = valUpp.z;
                 uchar4 valDown = rgba[idxDown];
-                int val_rD = (int)valDown.x;
-                int val_gD = (int)valDown.y;
-                int val_bD = (int)valDown.z;
+                unsigned char val_rD = valDown.x;
+                unsigned char val_gD = valDown.y;
+                unsigned char val_bD = valDown.z;
 
                 w_s = space_weight[(dx-x+radius)*dim_kernel+(dy-y+radius)];
                 int dr = __sad(val_rU, center_r,
@@ -141,9 +141,9 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
         for(int dx=x0; dx<=xn; dx++) {
             int idx = y * width + dx;
             uchar4 val = rgba[idx];
-            int val_r = (int)val.x;
-            int val_g = (int)val.y;
-            int val_b = (int)val.z;
+            unsigned char val_r = val.x;
+            unsigned char val_g = val.y;
+            unsigned char val_b = val.z;
 
             int dr = __sad(val_r, center_r,
          __sad(val_g, center_g,
@@ -158,18 +158,18 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
     } else if(y_local < radius) {
         idx0 = y_local * width + x;
         uchar4 pixel = rgba[idx0];
-        int center_r = (int)pixel.x;
-        int center_g = (int)pixel.y;
-        int center_b = (int)pixel.z;
+        unsigned char center_r = pixel.x;
+        unsigned char center_g = pixel.y;
+        unsigned char center_b = pixel.z;
 
         for (int dy = 0; dy <= y_local+radius; ++dy) {
             for (int dx = x0; dx <= xn; ++dx) {
                 int idx = dy * width + dx;
 
                 uchar4 val = rgba[idx];
-                int val_r = (int)val.x;
-                int val_g = (int)val.y;
-                int val_b = (int)val.z;
+                unsigned char val_r = val.x;
+                unsigned char val_g = val.y;
+                unsigned char val_b = val.z;
 
                 int dr = __sad(val_r, center_r,
          __sad(val_g, center_g,
@@ -186,18 +186,18 @@ __global__ void bilateral_u8_gray(uchar4 *rgba, unsigned char *out, int width, i
         int y = rows + y_local;            
         idx0 = y * width +x;
         uchar4 pixel = rgba[idx0];
-        int center_r = (int)pixel.x;
-        int center_g = (int)pixel.y;
-        int center_b = (int)pixel.z;
+        unsigned char center_r = pixel.x;
+        unsigned char center_g = pixel.y;
+        unsigned char center_b = pixel.z;
 
         for (int dy = y-radius; dy <= height-1; ++dy) {
             for (int dx = x0; dx <= xn; ++dx) {
                 int idx = dy * width + dx;
 
                 uchar4 val = rgba[idx];
-                int val_r = (int)val.x;
-                int val_g = (int)val.y;
-                int val_b = (int)val.z;
+                unsigned char val_r = val.x;
+                unsigned char val_g = val.y;
+                unsigned char val_b = val.z;
 
                int dr = __sad(val_r, center_r,
          __sad(val_g, center_g,
