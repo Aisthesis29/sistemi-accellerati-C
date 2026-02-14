@@ -336,6 +336,7 @@ int main(int argc, char **argv) {
 
     dim3 block(block_x, block_y);
     dim3 grid(grid_x,grid_y);
+    printf("grid x=%d,y=%d",grid_x,grid_y);
     // ========== Operazioni reali ==========
     memory_alignment<<<grid, block>>>(d_input, rgba, width, height);
     int ds2;
